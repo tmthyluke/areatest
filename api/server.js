@@ -73,17 +73,20 @@ function handleGetProjects(res) {
         {
           "id": "apple-branding",
           "name": "Apple Branding",
-          "description": "Apple branding and design work"
+          "description": "Apple branding and design work",
+          "active": true
         },
         {
           "id": "portfolio-2024", 
           "name": "Portfolio 2024",
-          "description": "2024 portfolio pieces"
+          "description": "2024 portfolio pieces",
+          "active": true
         },
         {
           "id": "sky-project",
           "name": "Sky Project", 
-          "description": "Sky themed project"
+          "description": "Sky themed project",
+          "active": true
         }
       ]
     };
