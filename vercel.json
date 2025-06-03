@@ -1,0 +1,26 @@
+{
+  "buildCommand": "cd gallery-portfolio && npm install && npm run build",
+  "outputDirectory": "gallery-portfolio/build",
+  "framework": "sveltekit",
+  "builds": [
+    {
+      "src": "api/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/gallery-portfolio/build/$1"
+    }
+  ],
+  "functions": {
+    "api/server.js": {
+      "maxDuration": 10
+    }
+  }
+} 
