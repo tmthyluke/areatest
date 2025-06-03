@@ -1,0 +1,30 @@
+{
+  "builds": [
+    {
+      "src": "gallery-portfolio/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "gallery-portfolio/build"
+      }
+    },
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/gallery-portfolio/build/$1"
+    }
+  ],
+  "functions": {
+    "server.js": {
+      "maxDuration": 10
+    }
+  }
+} 
