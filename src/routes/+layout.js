@@ -1,9 +1,8 @@
 /** @type {import('./$types').LayoutLoad} */
-export async function load({ fetch, url }) {
+export async function load({ fetch }) {
   try {
     // Use relative URL that works both locally and in production
-    const apiBase = url.origin;
-    const projectsResponse = await fetch(`${apiBase}/api/projects`);
+    const projectsResponse = await fetch('/api/projects');
     if (projectsResponse.ok) {
       const projectsData = await projectsResponse.json();
       return {

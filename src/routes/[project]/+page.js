@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ params, fetch, parent, url }) {
+export async function load({ params, fetch, parent }) {
   const projectId = params.project;
   
   try {
@@ -18,12 +18,11 @@ export async function load({ params, fetch, parent, url }) {
     }
     
     // Use relative URLs that work both locally and in production
-    const apiBase = url.origin;
     
     // Fetch project settings and images in parallel
     const [settingsResponse, imagesResponse] = await Promise.all([
-      fetch(`${apiBase}/api/projects/${projectId}/settings`),
-      fetch(`${apiBase}/api/projects/${projectId}/images`)
+      fetch(`/api/projects/${projectId}/settings`),
+      fetch(`/api/projects/${projectId}/images`)
     ]);
     
     let projectSettings = null;
