@@ -1,10 +1,24 @@
 {
-  "buildCommand": "cd gallery-portfolio && npm install && npm run build",
+  "buildCommand": "cd gallery-portfolio && npm ci && npm run build",
   "outputDirectory": "gallery-portfolio/.vercel/output/static",
-  "installCommand": "cd gallery-portfolio && npm install",
+  "installCommand": "cd gallery-portfolio && npm ci",
+  "framework": null,
   "functions": {
     "api/server.js": {
       "maxDuration": 10
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/server.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/gallery-portfolio/$1"
+    }
+  ]
 } 
