@@ -1,29 +1,9 @@
 {
-  "builds": [
-    {
-      "src": "gallery-portfolio/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "gallery-portfolio/build"
-      }
-    },
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/gallery-portfolio/build/$1"
-    }
-  ],
+  "buildCommand": "cd gallery-portfolio && npm run build",
+  "outputDirectory": "gallery-portfolio/build",
+  "installCommand": "cd gallery-portfolio && npm install",
   "functions": {
-    "server.js": {
+    "api/server.js": {
       "maxDuration": 10
     }
   }
