@@ -50,4 +50,8 @@ jspm_packages/
 *.tgz
 
 # Yarn Integrity file
-.yarn-integrity 
+.yarn-integrity
+
+# Large image directories (now served statically)
+/projects/
+/images/ 

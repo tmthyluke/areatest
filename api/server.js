@@ -1,11 +1,6 @@
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
-
-const PROJECTS_FILE = path.join(process.cwd(), 'projects', 'projects.json');
-const PROJECTS_DIR = path.join(process.cwd(), 'projects');
-const IMAGES_DIR = path.join(process.cwd(), 'images');
 
 // Vercel serverless function handler
 module.exports = (req, res) => {
@@ -47,13 +42,6 @@ module.exports = (req, res) => {
       const projectId = pathname.match(/^\/api\/projects\/([^\/]+)\/images$/)[1];
       handleGetProjectImages(res, projectId);
     }
-    // GET /api/projects/{projectId}/images/{filename} - Get specific image
-    else if (pathname.match(/^\/api\/projects\/([^\/]+)\/images\/(.+)$/) && (method === 'GET' || method === 'HEAD')) {
-      const matches = pathname.match(/^\/api\/projects\/([^\/]+)\/images\/(.+)$/);
-      const projectId = matches[1];
-      const filename = matches[2];
-      handleGetProjectImage(req, res, projectId, filename);
-    }
     // GET /api/projects/{projectId}/description - Get project description  
     else if (pathname.match(/^\/api\/projects\/([^\/]+)\/description$/) && method === 'GET') {
       const projectId = pathname.match(/^\/api\/projects\/([^\/]+)\/description$/)[1];
@@ -62,10 +50,6 @@ module.exports = (req, res) => {
     // Legacy API compatibility
     else if (pathname === '/api/settings' && method === 'POST') {
       handleLegacySettings(req, res);
-    }
-    // Serve static images from /images directory
-    else if (pathname.startsWith('/images/') && method === 'GET') {
-      handleStaticImage(res, pathname);
     }
     // 404 for unhandled routes
     else {
@@ -83,7 +67,26 @@ module.exports = (req, res) => {
 
 function handleGetProjects(res) {
   try {
-    const projectsData = JSON.parse(fs.readFileSync(PROJECTS_FILE, 'utf8'));
+    // Return hardcoded projects data since we can't read files in serverless
+    const projectsData = {
+      "projects": [
+        {
+          "id": "apple-branding",
+          "name": "Apple Branding",
+          "description": "Apple branding and design work"
+        },
+        {
+          "id": "portfolio-2024", 
+          "name": "Portfolio 2024",
+          "description": "2024 portfolio pieces"
+        },
+        {
+          "id": "sky-project",
+          "name": "Sky Project", 
+          "description": "Sky themed project"
+        }
+      ]
+    };
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(projectsData));
@@ -97,19 +100,11 @@ function handleGetProjects(res) {
 
 function handleGetProjectSettings(res, projectId) {
   try {
-    const settingsFile = path.join(PROJECTS_DIR, projectId, 'settings.json');
-    if (fs.existsSync(settingsFile)) {
-      const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(settings));
-    } else {
-      // Return default settings if file doesn't exist
-      const defaultSettings = { settings: {}, imageOrder: [] };
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(defaultSettings));
-    }
+    // Return default settings since we can't persistently store in serverless
+    const defaultSettings = { settings: {}, imageOrder: [] };
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(defaultSettings));
   } catch (error) {
     console.error('Error reading project settings:', error);
     res.statusCode = 500;
@@ -128,48 +123,13 @@ function handlePostProjectSettings(req, res, projectId) {
   req.on('end', () => {
     try {
       const newSettings = JSON.parse(body);
+      console.log(`Settings update for ${projectId}:`, newSettings);
       
-      // Ensure project directory exists
-      const projectDir = path.join(PROJECTS_DIR, projectId);
-      if (!fs.existsSync(projectDir)) {
-        fs.mkdirSync(projectDir, { recursive: true });
-      }
-      
-      const settingsFile = path.join(projectDir, 'settings.json');
-      
-      // Read existing settings or create default
-      let existingSettings = { settings: {}, imageOrder: [] };
-      if (fs.existsSync(settingsFile)) {
-        existingSettings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
-      }
-      
-      // Handle full reorder operation
-      if (newSettings.fullReorder === true && Array.isArray(newSettings.newOrder)) {
-        console.log(`Updating project ${projectId} settings:`, newSettings);
-        existingSettings.imageOrder = newSettings.newOrder;
-      }
-      // Handle individual image settings
-      else if (newSettings.imageId) {
-        console.log(`Updating project ${projectId} settings:`, newSettings);
-        existingSettings.settings[newSettings.imageId] = existingSettings.settings[newSettings.imageId] || {};
-        
-        if (newSettings.units !== undefined) {
-          existingSettings.settings[newSettings.imageId].units = newSettings.units;
-        }
-        if (newSettings.isFill !== undefined) {
-          existingSettings.settings[newSettings.imageId].isFill = newSettings.isFill;
-        }
-        if (newSettings.caption !== undefined) {
-          existingSettings.settings[newSettings.imageId].caption = newSettings.caption;
-        }
-      }
-      
-      // Save updated settings
-      fs.writeFileSync(settingsFile, JSON.stringify(existingSettings, null, 2), 'utf8');
-      
+      // In a serverless environment, settings can't be persisted to files
+      // You'd typically save to a database here
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ success: true }));
+      res.end(JSON.stringify({ success: true, note: 'Settings received but not persisted in demo' }));
       
     } catch (error) {
       console.error('Error updating project settings:', error);
@@ -182,25 +142,39 @@ function handlePostProjectSettings(req, res, projectId) {
 
 function handleGetProjectImages(res, projectId) {
   try {
-    const imagesDir = path.join(PROJECTS_DIR, projectId, 'images');
-    if (!fs.existsSync(imagesDir)) {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ images: [] }));
-      return;
-    }
+    // Return static image paths instead of reading from filesystem
+    const imageData = {
+      "apple-branding": [
+        "/projects/apple-branding/images/1-apple.png",
+        "/projects/apple-branding/images/2-1-apple-alt-1.png",
+        "/projects/apple-branding/images/2-2-apple-alt-2.png",
+        "/projects/apple-branding/images/3-1-starnote.svg",
+        "/projects/apple-branding/images/3-2-apple-starnote.svg",
+        "/projects/apple-branding/images/5-apple-computer-music.png",
+        "/projects/apple-branding/images/6-apple-lettering.png",
+        "/projects/apple-branding/images/7-apple-sleeve.png"
+      ],
+      "portfolio-2024": [
+        "/projects/portfolio-2024/images/19-starnote-necklace.png",
+        "/projects/portfolio-2024/images/22-apple-planet-day.png",
+        "/projects/portfolio-2024/images/30-xxoplex-artwork.png",
+        "/projects/portfolio-2024/images/KazooSkate3.png",
+        "/projects/portfolio-2024/images/stack.png"
+      ],
+      "sky-project": [
+        "/projects/sky-project/images/1-apple.png",
+        "/projects/sky-project/images/14-lifeline.png",
+        "/projects/sky-project/images/16.png",
+        "/projects/sky-project/images/Frame3203.png",
+        "/projects/sky-project/images/ShieldsPink.png"
+      ]
+    };
     
-    const files = fs.readdirSync(imagesDir);
-    const imageFiles = files.filter(file => {
-      const ext = path.extname(file).toLowerCase();
-      return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext);
-    });
-    
-    const imagePaths = imageFiles.map(file => `/api/projects/${projectId}/images/${file}`);
+    const images = imageData[projectId] || [];
     
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ images: imagePaths }));
+    res.end(JSON.stringify({ images }));
   } catch (error) {
     console.error('Error reading project images:', error);
     res.statusCode = 500;
@@ -209,65 +183,18 @@ function handleGetProjectImages(res, projectId) {
   }
 }
 
-function handleGetProjectImage(req, res, projectId, filename) {
-  try {
-    const imagePath = path.join(PROJECTS_DIR, projectId, 'images', filename);
-    
-    if (!fs.existsSync(imagePath)) {
-      res.statusCode = 404;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Image not found' }));
-      return;
-    }
-    
-    const ext = path.extname(filename).toLowerCase();
-    const mimeTypes = {
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml'
-    };
-    
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
-    
-    if (req.method === 'HEAD') {
-      const stats = fs.statSync(imagePath);
-      res.statusCode = 200;
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Length', stats.size);
-      res.end();
-      return;
-    }
-    
-    res.statusCode = 200;
-    res.setHeader('Content-Type', contentType);
-    
-    const imageStream = fs.createReadStream(imagePath);
-    imageStream.pipe(res);
-    
-  } catch (error) {
-    console.error('Error serving project image:', error);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to serve image' }));
-  }
-}
-
 function handleGetProjectDescription(res, projectId) {
   try {
-    const descriptionFile = path.join(PROJECTS_DIR, projectId, 'description.md');
-    if (fs.existsSync(descriptionFile)) {
-      const description = fs.readFileSync(descriptionFile, 'utf8');
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'text/plain');
-      res.end(description);
-    } else {
-      res.statusCode = 404;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Description not found' }));
-    }
+    const descriptions = {
+      "apple-branding": "Apple branding and design work showcasing various logo concepts and applications.",
+      "portfolio-2024": "Latest portfolio pieces from 2024 featuring diverse creative work.",
+      "sky-project": "Sky-themed creative project exploring atmospheric design concepts."
+    };
+    
+    const description = descriptions[projectId] || "No description available.";
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end(description);
   } catch (error) {
     console.error('Error reading project description:', error);
     res.statusCode = 500;
@@ -277,7 +204,6 @@ function handleGetProjectDescription(res, projectId) {
 }
 
 function handleLegacySettings(req, res) {
-  // Legacy endpoint that maps to apple-branding project
   let body = '';
   
   req.on('data', chunk => {
@@ -299,41 +225,4 @@ function handleLegacySettings(req, res) {
       res.end(JSON.stringify({ error: 'Invalid JSON' }));
     }
   });
-}
-
-function handleStaticImage(res, pathname) {
-  try {
-    const imagePath = path.join(IMAGES_DIR, pathname.replace('/images/', ''));
-    
-    if (!fs.existsSync(imagePath)) {
-      res.statusCode = 404;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Image not found' }));
-      return;
-    }
-    
-    const ext = path.extname(imagePath).toLowerCase();
-    const mimeTypes = {
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml'
-    };
-    
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
-    
-    res.statusCode = 200;
-    res.setHeader('Content-Type', contentType);
-    
-    const imageStream = fs.createReadStream(imagePath);
-    imageStream.pipe(res);
-    
-  } catch (error) {
-    console.error('Error serving static image:', error);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to serve image' }));
-  }
 } 
