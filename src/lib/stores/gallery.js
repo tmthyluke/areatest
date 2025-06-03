@@ -26,7 +26,6 @@ export const CONFIG = {
   MIN_UNITS: 2,
   MAX_UNITS: 20,
   DEFAULT_TRANSITION_DURATION: '0ms',
-  API_BASE_URL: 'http://localhost:3000',
   
   // Image aspect ratios
   DEFAULT_RATIOS: [

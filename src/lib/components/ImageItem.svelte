@@ -21,8 +21,8 @@
   
   // Compute correct API endpoint based on projectId
   $: settingsApiUrl = projectId ? 
-    `http://localhost:3000/api/projects/${projectId}/settings` : 
-    'http://localhost:3000/api/settings';
+    `/api/projects/${projectId}/settings` : 
+    '/api/settings';
   
   // Reactive statement to update element styling when units changes
   $: if (element) {

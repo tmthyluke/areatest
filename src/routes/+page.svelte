@@ -34,7 +34,6 @@
         <article 
           class="project-card" 
           on:click={() => navigateToProject(project.id)}
-          data-sveltekit-preload-data="hover"
         >
           <a href="/{project.id}/" class="project-link-wrapper">
             <div class="project-content">
