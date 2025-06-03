@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
+// In-memory storage for settings (will persist during the session)
+const projectSettings = {};
+
 // Vercel serverless function handler
 module.exports = (req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -103,11 +106,10 @@ function handleGetProjects(res) {
 
 function handleGetProjectSettings(res, projectId) {
   try {
-    // Return default settings since we can't persistently store in serverless
-    const defaultSettings = { settings: {}, imageOrder: [] };
+    const settings = projectSettings[projectId] || { settings: {}, imageOrder: [] };
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(defaultSettings));
+    res.end(JSON.stringify(settings));
   } catch (error) {
     console.error('Error reading project settings:', error);
     res.statusCode = 500;
@@ -125,14 +127,37 @@ function handlePostProjectSettings(req, res, projectId) {
   
   req.on('end', () => {
     try {
-      const newSettings = JSON.parse(body);
-      console.log(`Settings update for ${projectId}:`, newSettings);
+      const newData = JSON.parse(body);
+      console.log(`Settings update for ${projectId}:`, newData);
       
-      // In a serverless environment, settings can't be persisted to files
-      // You'd typically save to a database here
+      // Initialize project settings if they don't exist
+      if (!projectSettings[projectId]) {
+        projectSettings[projectId] = { settings: {}, imageOrder: [] };
+      }
+      
+      const projectData = projectSettings[projectId];
+      
+      if (newData.fullReorder && newData.newOrder) {
+        // Handle full reorder
+        projectData.imageOrder = newData.newOrder;
+        console.log(`Updated image order for ${projectId}:`, newData.newOrder);
+      } else if (newData.imageId) {
+        // Handle individual image settings
+        const { imageId, units, isFill, caption } = newData;
+        
+        // Update or create settings for this image
+        projectData.settings[imageId] = {
+          units: units,
+          isFill: isFill,
+          caption: caption || projectData.settings[imageId]?.caption || imageId
+        };
+        
+        console.log(`Updated settings for ${imageId} in ${projectId}:`, projectData.settings[imageId]);
+      }
+      
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ success: true, note: 'Settings received but not persisted in demo' }));
+      res.end(JSON.stringify({ success: true, data: projectData }));
       
     } catch (error) {
       console.error('Error updating project settings:', error);

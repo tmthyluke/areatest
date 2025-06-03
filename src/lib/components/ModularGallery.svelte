@@ -79,20 +79,22 @@
     }, 200);
   }
   
-  async function loadImages() {
+  async function loadImages(forceRefresh = false) {
     try {
-      // Use preloaded data if available, otherwise fetch
-      let settingsData = preloadedSettings;
-      let imagesData = preloadedImages;
+      // Use preloaded data if available and not forcing refresh, otherwise fetch
+      let settingsData = (forceRefresh || !preloadedSettings) ? null : preloadedSettings;
+      let imagesData = (forceRefresh || !preloadedImages) ? null : preloadedImages;
       
       if (!settingsData) {
         // Load settings
+        console.log('Fetching settings for project:', projectId);
         const settingsResponse = await fetch(settingsApiUrl);
         settingsData = settingsResponse.ok ? await settingsResponse.json() : {};
       }
       
       if (!imagesData) {
         // Load image list
+        console.log('Fetching images for project:', projectId);
         const imagesResponse = await fetch(imagesApiUrl);
         imagesData = await imagesResponse.json();
       }
@@ -398,9 +400,23 @@
       
       // In grid view, don't set width - let CSS Grid handle it
       if (currentView === 'grid') {
-        item.style.width = ''; // Remove width, let grid handle it
+        item.style.width = '100%'; // Fill the grid cell completely
+        item.style.minWidth = '0'; // Allow shrinking if needed
+        
+        // Ensure image container fills the grid item
+        const imgContainer = item.querySelector('.image-container');
+        if (imgContainer) {
+          imgContainer.style.width = '100%';
+        }
       } else {
         item.style.width = w + 'px';
+        item.style.minWidth = '';
+        
+        // Reset image container width in feed view
+        const imgContainer = item.querySelector('.image-container');
+        if (imgContainer) {
+          imgContainer.style.width = '';
+        }
       }
       
       if (item.classList.contains('image-item')) {
@@ -1132,9 +1148,9 @@
   
   // Reactive statement to reload images when projectId or preloaded data changes
   $: if (mounted && projectId !== lastProjectId) {
-    console.log('ProjectId changed from', lastProjectId, 'to', projectId, '- reloading images...');
+    console.log('ProjectId changed from', lastProjectId, 'to', projectId, '- reloading images with fresh data...');
     lastProjectId = projectId;
-    loadImages();
+    loadImages(true); // Force refresh when projectId changes
   }
 </script>
 
@@ -1252,6 +1268,20 @@
 
 <style>
   /* All styles come from gallery.css */
+  
+  /* Grid layout fixes */
+  :global(.grid.grid-layout .grid-item) {
+    width: 100% !important;
+    min-width: 0;
+  }
+  
+  :global(.grid.grid-layout .image-container) {
+    width: 100% !important;
+  }
+  
+  :global(.grid.grid-layout .image-container img) {
+    width: 100% !important;
+  }
   
   /* Drag and drop styles */
   .draggable {
