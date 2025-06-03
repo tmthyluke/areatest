@@ -1,0 +1,242 @@
+{
+  "settings": {
+    "img-KazooLFGNew_-fill": {
+      "units": 10,
+      "isFill": false,
+      "caption": "KAZOO"
+    },
+    "img-KazooSkate3-fill": {
+      "units": 16,
+      "isFill": false,
+      "caption": "KAZOO SKATE"
+    },
+    "img-image1-fill": {
+      "units": 20,
+      "isFill": true,
+      "caption": "ARSENAL A EMBROIDERY"
+    },
+    "img-ShieldsPink-fill": {
+      "units": 8,
+      "isFill": true,
+      "caption": "TEST!!!"
+    },
+    "img-Badges2000-fill": {
+      "units": 20,
+      "isFill": true,
+      "caption": "SHIELD BADGES INFINITY 2"
+    },
+    "img-uitest-fill": {
+      "units": 10,
+      "isFill": false,
+      "caption": "UI TEST"
+    },
+    "img-Frame3203-fill": {
+      "units": 8,
+      "isFill": false,
+      "caption": "SKY"
+    },
+    "img-animation-fill": {
+      "units": 2,
+      "isFill": true,
+      "caption": "SPINNER"
+    },
+    "img-areasvg-fill": {
+      "units": 8,
+      "isFill": true,
+      "caption": "AREA"
+    },
+    "img-12-translucent-apple-poster-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-11-apple-computer-music-poster-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-1-apple-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-2-2-apple-alt-2-fill": {
+      "units": 18,
+      "isFill": true,
+      "caption": "2-2-APPLE-ALT-2"
+    },
+    "img-1-apple-white-tee-1-fill": {
+      "units": 14,
+      "isFill": true,
+      "caption": "1-APPLE-WHITE-TEE-1"
+    },
+    "img-1-apple-white-tee-2-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-3-1-starnote-fill": {
+      "units": 2,
+      "isFill": true
+    },
+    "img-3-2-apple-starnote-fill": {
+      "units": 2,
+      "isFill": true
+    },
+    "img-3-3-acg-starnote-fill": {
+      "units": 2,
+      "isFill": true
+    },
+    "img-3-neon-starleaves-longsleeve-1-fill": {
+      "units": 8,
+      "isFill": false,
+      "caption": "NEON STARLEAVES LONGSLEEVE"
+    },
+    "img-5-apple-computer-music-fill": {
+      "units": 20,
+      "isFill": false
+    },
+    "img-7-apple-sleeve-fill": {
+      "units": 16,
+      "isFill": true
+    },
+    "img-6-black-hooded-sweatshirt-1-fill": {
+      "units": 8,
+      "isFill": false
+    },
+    "img-14-lifeline-fill": {
+      "units": 2,
+      "isFill": true,
+      "caption": "14-lifeline"
+    },
+    "img-2-1-apple-alt-1-fill": {
+      "units": 16,
+      "isFill": true
+    },
+    "img-2-xxoplex-black-tee-1-fill": {
+      "units": 14,
+      "isFill": true
+    },
+    "img-2-xxoplex-black-tee-2-fill": {
+      "units": 14,
+      "isFill": true
+    },
+    "img-2-xxoplex-black-tee-3-fill": {
+      "units": 14,
+      "isFill": true
+    },
+    "img-2-xxoplex-black-tee-4-fill": {
+      "units": 14,
+      "isFill": true
+    },
+    "img-3-neon-starleaves-longsleeve-2-fill": {
+      "units": 10,
+      "isFill": true,
+      "caption": "ASDFASDF"
+    },
+    "img-4-green-tee-1-fill": {
+      "units": 10,
+      "isFill": true
+    },
+    "img-4-green-tee-2-fill": {
+      "units": 10,
+      "isFill": true
+    },
+    "img-5-white-ab-longsleeve-2-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-6-apple-lettering-fill": {
+      "units": 18,
+      "isFill": true
+    },
+    "img-6-black-hooded-sweatshirt-2-fill": {
+      "units": 8,
+      "isFill": true
+    },
+    "img-5-white-ab-longsleeve-1-fill": {
+      "units": 4,
+      "isFill": true
+    },
+    "img-36-apple-poster-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-37-beautiful-superstar-poster-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-38-lifeline-poster-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-39-xxoplex-poster-fill": {
+      "units": 12,
+      "isFill": true
+    },
+    "img-19-starnote-necklace-fill": {
+      "units": 2,
+      "isFill": false
+    },
+    "img-21-starnote-necklace-fill": {
+      "units": 4,
+      "isFill": false
+    },
+    "img-22-apple-planet-day-fill": {
+      "units": 20,
+      "isFill": true
+    },
+    "img-30-xxoplex-artwork-fill": {
+      "units": 20,
+      "isFill": true
+    },
+    "img-1_front-fill": {
+      "units": 20,
+      "isFill": true
+    },
+    "img-stack-fill": {
+      "units": 14,
+      "isFill": false
+    },
+    "img-britpop-fill": {
+      "units": 18,
+      "isFill": false
+    },
+    "img-16-fill": {
+      "units": 16,
+      "isFill": false
+    }
+  },
+  "imageOrder": [
+    "img-16-fill",
+    "img-britpop-fill",
+    "img-1-apple-fill",
+    "img-KazooSkate3-fill",
+    "img-3-1-starnote-fill",
+    "img-3-neon-starleaves-longsleeve-1-fill",
+    "img-2-2-apple-alt-2-fill",
+    "img-14-lifeline-fill",
+    "img-2-1-apple-alt-1-fill",
+    "img-3-2-apple-starnote-fill",
+    "img-5-apple-computer-music-fill",
+    "img-6-apple-lettering-fill",
+    "img-3-3-acg-starnote-fill",
+    "img-7-apple-sleeve-fill",
+    "img-Badges2000-fill",
+    "img-Frame3203-fill",
+    "img-KazooLFGNew_-fill",
+    "img-ShieldsPink-fill",
+    "img-animation-fill",
+    "img-areasvg-fill",
+    "img-image1-fill",
+    "img-uitest-fill",
+    "img-19-starnote-necklace-fill",
+    "img-1_front-fill",
+    "img-22-apple-planet-day-fill",
+    "img-30-xxoplex-artwork-fill",
+    "img-12-translucent-apple-poster-fill",
+    "img-11-apple-computer-music-poster-fill",
+    "img-36-apple-poster-fill",
+    "img-37-beautiful-superstar-poster-fill",
+    "img-38-lifeline-poster-fill",
+    "img-39-xxoplex-poster-fill",
+    "img-stack-fill",
+    "img-21-starnote-necklace-fill"
+  ]
+}

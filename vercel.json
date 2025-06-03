@@ -1,8 +1,8 @@
 {
-  "buildCommand": "cd gallery-portfolio && npm ci && npm run build",
-  "outputDirectory": "gallery-portfolio/.vercel/output/static",
-  "installCommand": "cd gallery-portfolio && npm ci",
-  "framework": null,
+  "buildCommand": "npm ci && npm run build",
+  "outputDirectory": ".vercel/output/static",
+  "installCommand": "npm ci",
+  "framework": "sveltejs",
   "functions": {
     "api/server.js": {
       "maxDuration": 10
