@@ -2,12 +2,6 @@
   "buildCommand": "cd gallery-portfolio && npm install && npm run build",
   "outputDirectory": "gallery-portfolio/build",
   "framework": "sveltekit",
-  "builds": [
-    {
-      "src": "api/server.js",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
