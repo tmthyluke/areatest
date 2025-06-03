@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ params, fetch, parent }) {
+export async function load({ params, fetch, parent, url }) {
   const projectId = params.project;
   
   try {
@@ -17,10 +17,13 @@ export async function load({ params, fetch, parent }) {
       throw error(404, `Project "${projectId}" is not active`);
     }
     
+    // Use relative URLs that work both locally and in production
+    const apiBase = url.origin;
+    
     // Fetch project settings and images in parallel
     const [settingsResponse, imagesResponse] = await Promise.all([
-      fetch(`http://localhost:3000/api/projects/${projectId}/settings`),
-      fetch(`http://localhost:3000/api/projects/${projectId}/images`)
+      fetch(`${apiBase}/api/projects/${projectId}/settings`),
+      fetch(`${apiBase}/api/projects/${projectId}/images`)
     ]);
     
     let projectSettings = null;
