@@ -1156,22 +1156,64 @@
 
 <!-- Same template structure, but using components -->
 <div class="mode-toggle-container">
-  <div class="mode-toggle" id="feed-btn" on:click={() => setViewMode('feed')}>
+  <div 
+    class="mode-toggle" 
+    id="feed-btn" 
+    role="button" 
+    tabindex="0"
+    on:click={() => setViewMode('feed')}
+    on:keydown={(e) => e.key === 'Enter' && setViewMode('feed')}
+  >
     <div class="mode-toggle-inner">Feed</div>
   </div>
-  <div class="mode-toggle" id="grid-btn" on:click={() => setViewMode('grid')}>
+  <div 
+    class="mode-toggle" 
+    id="grid-btn" 
+    role="button" 
+    tabindex="0"
+    on:click={() => setViewMode('grid')}
+    on:keydown={(e) => e.key === 'Enter' && setViewMode('grid')}
+  >
     <div class="mode-toggle-inner">Grid</div>
   </div>
-  <div class="mode-toggle" id="lightbox-btn" on:click={() => setViewMode('lightbox')}>
+  <div 
+    class="mode-toggle" 
+    id="lightbox-btn" 
+    role="button" 
+    tabindex="0"
+    on:click={() => setViewMode('lightbox')}
+    on:keydown={(e) => e.key === 'Enter' && setViewMode('lightbox')}
+  >
     <div class="mode-toggle-inner">Lightbox</div>
   </div>
-  <div class="mode-toggle" id="controls-toggle-btn" on:click={toggleControlsVisibility}>
+  <div 
+    class="mode-toggle" 
+    id="controls-toggle-btn" 
+    role="button" 
+    tabindex="0"
+    on:click={toggleControlsVisibility}
+    on:keydown={(e) => e.key === 'Enter' && toggleControlsVisibility()}
+  >
     <div class="mode-toggle-inner">Controls</div>
   </div>
-  <div class="mode-toggle" id="projects-btn" on:click={() => window.location.href = '/'}>
+  <div 
+    class="mode-toggle" 
+    id="projects-btn" 
+    role="button" 
+    tabindex="0"
+    on:click={() => window.location.href = '/'}
+    on:keydown={(e) => e.key === 'Enter' && (window.location.href = '/')}
+  >
     <div class="mode-toggle-inner">Projects</div>
   </div>
-  <div class="mode-toggle" id="view-toggle-btn" on:click={() => setViewMode(gridViewActive ? 'feed' : 'grid')}>
+  <div 
+    class="mode-toggle" 
+    id="view-toggle-btn" 
+    role="button" 
+    tabindex="0"
+    on:click={() => setViewMode(gridViewActive ? 'feed' : 'grid')}
+    on:keydown={(e) => e.key === 'Enter' && setViewMode(gridViewActive ? 'feed' : 'grid')}
+  >
     <div class="mode-toggle-inner">
       <svg id="view-toggle-svg" width="72px" height="72px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
         <path id="morphing-path" d="M4.47,87.88 l-3.17,3.17 m13.63,-3.22 l-2.45,3.26 m12.88,-3.29 l-1.67,3.34 m12.08,-3.37 l-0.85,3.38 m11.25,-3.38 l 0 3.4 m10.4,-3.4 l0.85,3.38 m9.56,-3.35 l1.67,3.34 m8.77,-3.31 l2.45,3.26 m8.01,-3.21 l3.17,3.17 m-86.54,-13.63 l-3.26,2.45 m13.72,-2.49 l-2.52,2.52 m12.94,-2.55 l-1.72,2.58 m12.12,-2.6 l-0.87,2.62 m11.25,-2.63 l 0 2.63 m10.39,-2.62 l0.87,2.62 m9.53,-2.6 l1.72,2.58 m8.7,-2.55 l2.52,2.52 m7.93,-2.48 l3.26,2.45 m-86.54,-12.89 l-3.34,1.67 m13.79,-1.69 l-2.58,1.72 m12.99,-1.74 l-1.76,1.76 m12.15,-1.78 l-0.9,1.79 m11.27,-1.79 l 0 1.8 m10.38,-1.8 l0.9,1.79 m9.49,-1.77 l1.76,1.76 m8.65,-1.74 l2.58,1.72 m7.87,-1.7 l3.34,1.67 m-86.57,-12.08 l-3.38,0.85 m13.82,-0.86 l-2.62,0.87 m13.03,-0.88 l-1.79,0.9 m12.17,-0.91 l-0.91,0.91 m11.28,-0.91 l 0 0.91 m10.37,-0.91 l0.91,0.91 m9.47,-0.9 l1.79,0.9 m8.62,-0.89 l2.62,0.87 m7.82,-0.86 l3.38,0.85 m-86.57,-11.25 l -3.4 0 m13.84,0 l -2.63 0 m13.04,0 l -1.8 0 m12.18,0 l -0.91 0 m11.27,0 l 0 0 m10.37,0 l 0.91 0 m9.47,0 l 1.8 0 m8.6,0 l 2.63 0 m7.82,0 l 3.4 0 m-86.6,-10.4 l-3.38,-0.85 m13.82,0.87 l-2.62,-0.87 m13.03,0.88 l-1.79,-0.9 m12.17,0.9 l-0.91,-0.91 m11.28,0.92 l 0 -0.91 m10.37,0.9 l0.91,-0.91 m9.47,0.91 l1.79,-0.9 m8.62,0.89 l2.62,-0.87 m7.82,0.85 l3.38,-0.85 m-86.6,-9.56 l-3.34,-1.67 m13.79,1.7 l-2.58,-1.72 m12.99,1.74 l-1.76,-1.76 m12.15,1.77 l-0.9,-1.79 m11.27,1.8 l 0 -1.8 m10.38,1.79 l0.9,-1.79 m9.49,1.78 l1.76,-1.76 m8.65,1.74 l2.58,-1.72 m7.87,1.69 l3.34,-1.67 m-86.63,-8.76 l-3.26,-2.45 m13.72,2.49 l-2.52,-2.52 m12.94,2.55 l-1.72,-2.58 m12.12,2.59 l-0.87,-2.62 m11.25,2.63 l 0 -2.63 m10.39,2.62 l0.87,-2.62 m9.53,2.61 l1.72,-2.58 m8.7,2.55 l2.52,-2.52 m7.93,2.48 l3.26,-2.45 m-86.62,-8.01 l-3.17,-3.17 m13.63,3.21 l-2.45,-3.26 m12.88,3.3 l-1.67,-3.34 m12.08,3.36 l-0.85,-3.38 m11.25,3.39 l 0 -3.4 m10.4,3.39 l0.85,-3.38 m9.56,3.36 l1.67,-3.34 m8.77,3.3 l2.45,-3.26 m8.01,3.22 l3.17,-3.17" fill="none" stroke="currentColor" stroke-width="2"></path>
@@ -1259,10 +1301,30 @@
       <div id="lightbox-dots" class="lightbox-dots">
         <!-- Dots will be inserted here dynamically -->
       </div>
-      <div class="lightbox-close-text" on:click={closeLightbox}>Close</div>
+      <div 
+        class="lightbox-close-text" 
+        role="button" 
+        tabindex="0"
+        on:click={closeLightbox}
+        on:keydown={(e) => e.key === 'Enter' && closeLightbox()}
+      >Close</div>
     </div>
-    <div class="lightbox-nav lightbox-prev" id="lightbox-prev" on:click={() => navigateLightbox(-1)}></div>
-    <div class="lightbox-nav lightbox-next" id="lightbox-next" on:click={() => navigateLightbox(1)}></div>
+    <div 
+      class="lightbox-nav lightbox-prev" 
+      id="lightbox-prev" 
+      role="button" 
+      tabindex="0"
+      on:click={() => navigateLightbox(-1)}
+      on:keydown={(e) => e.key === 'Enter' && navigateLightbox(-1)}
+    ></div>
+    <div 
+      class="lightbox-nav lightbox-next" 
+      id="lightbox-next" 
+      role="button" 
+      tabindex="0"
+      on:click={() => navigateLightbox(1)}
+      on:keydown={(e) => e.key === 'Enter' && navigateLightbox(1)}
+    ></div>
   </div>
 </div>
 
@@ -1284,6 +1346,8 @@
   }
   
   /* Drag and drop styles */
+  /* Note: Drag functionality styles are commented out as they're not currently implemented */
+  /*
   .draggable {
     position: relative;
     cursor: grab;
@@ -1319,6 +1383,7 @@
   .drag-handle:hover {
     background-color: rgba(255, 255, 255, 0.9);
   }
+  */
   
   /* Editable caption styles */
   :global(.text-inner[contenteditable=true]) {

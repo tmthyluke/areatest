@@ -125,6 +125,8 @@
       bind:this={captionElement}
       class="text-inner" 
       contenteditable="true"
+      role="textbox"
+      aria-label="Image caption"
       on:blur={handleCaptionBlur}
       on:keydown={handleCaptionKeydown}
       on:click={handleCaptionClick}

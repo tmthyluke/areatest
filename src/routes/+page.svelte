@@ -31,10 +31,7 @@
   {:else}
     <div class="projects-grid">
       {#each projects as project}
-        <article 
-          class="project-card" 
-          on:click={() => navigateToProject(project.id)}
-        >
+        <article class="project-card">
           <a href="/{project.id}/" class="project-link-wrapper">
             <div class="project-content">
               <h2>{project.name}</h2>
