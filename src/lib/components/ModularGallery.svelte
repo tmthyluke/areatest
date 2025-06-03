@@ -38,6 +38,9 @@
   $: imagesApiUrl = projectId ? `${apiBaseUrl}/projects/${projectId}/images` : `${apiBaseUrl}/images`;
   $: settingsApiUrl = projectId ? `${apiBaseUrl}/projects/${projectId}/settings` : `${apiBaseUrl}/settings`;
   
+  // Track projectId changes to reload images
+  let lastProjectId = projectId;
+  
   onMount(() => {
     console.log('ModularGallery mounted');
     mounted = true; // Set mounted to true
@@ -1125,6 +1128,13 @@
         }
       });
     });
+  }
+  
+  // Reactive statement to reload images when projectId or preloaded data changes
+  $: if (mounted && projectId !== lastProjectId) {
+    console.log('ProjectId changed from', lastProjectId, 'to', projectId, '- reloading images...');
+    lastProjectId = projectId;
+    loadImages();
   }
 </script>
 
