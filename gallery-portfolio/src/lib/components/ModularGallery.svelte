@@ -292,6 +292,37 @@
     
     const currentWidth = window.innerWidth;
     
+    // Get current screen width to determine mobile breakpoint
+    const isMobile = currentWidth <= 768;
+    const isTablet = currentWidth <= 1024 && currentWidth > 768;
+    
+    // On mobile, let CSS handle the grid entirely - only do minimal JS calculations
+    if (isMobile) {
+      // Still set container width and remove body margins as before
+      const contentWidth = Math.floor(currentWidth / UNIT) * UNIT;
+      const cols = Math.floor(currentWidth / UNIT);
+      
+      if (containerElement) {
+        containerElement.style.width = `${contentWidth}px`;
+        containerElement.style.margin = '0 auto';
+      }
+      
+      // Remove body margins to let CSS media query handle grid padding
+      document.body.style.marginLeft = '';
+      document.body.style.marginRight = '';
+      
+      // Don't modify grid element styles - let CSS handle it completely
+      if (gridElement) {
+        gridElement.style.padding = ''; // Remove any JS-set padding
+        gridElement.style.width = '';
+        gridElement.style.maxWidth = '';
+      }
+      
+      // Update lastWindowWidth and return early
+      lastWindowWidth = currentWidth;
+      return;
+    }
+    
     // Skip recalculation if dimensions haven't changed and we're not switching view modes
     // Temporarily disabled for debugging
     // if (initialLayoutCalculated && lastWindowWidth === currentWidth && !gridViewActive && !lightboxMode && currentView === 'feed') {
@@ -301,10 +332,6 @@
     // Calculate layout using original method, but with synchronized units
     let bestCols = 0;
     let bestMarginUnits = 1;
-    
-    // Get current screen width to determine mobile breakpoint
-    const isMobile = currentWidth <= 768;
-    const isTablet = currentWidth <= 1024 && currentWidth > 768;
     
     // Use smaller margins on mobile/tablet for less white space
     let marginOptions;
@@ -381,9 +408,15 @@
       containerElement.style.margin = '0 auto';
     }
     
-    // Set body margins
-    document.body.style.marginLeft = `${finalMargin}px`;
-    document.body.style.marginRight = `${finalMargin}px`;
+    // Set body margins - but only on tablet/desktop, let CSS handle mobile
+    if (!isMobile) {
+      document.body.style.marginLeft = `${finalMargin}px`;
+      document.body.style.marginRight = `${finalMargin}px`;
+    } else {
+      // On mobile, remove any JS-set margins to let CSS media query take over
+      document.body.style.marginLeft = '';
+      document.body.style.marginRight = '';
+    }
     
     // Cache DOM queries for better performance
     const gridColumnWidthInput = document.getElementById('grid-column-width');
@@ -441,6 +474,12 @@
         gridElement.style.gridTemplateColumns = '';
         gridElement.style.gap = 'var(--unit)'; // Reset to the default gap for feed view
         gridElement.classList.remove('grid-layout');
+        
+        // On mobile, don't override CSS-controlled padding
+        if (!isMobile) {
+          // Only set grid padding on desktop/tablet
+          gridElement.style.padding = '';
+        }
         
         // Restore original maxUnits values in feed view BEFORE sizing calculations
         document.querySelectorAll('.grid-item').forEach(item => {
@@ -527,6 +566,11 @@
       (lastWindowWidth <= 1024 && currentWidth > 1024);
     
     if (crossedBreakpoint) {
+      // Force CSS re-evaluation when crossing breakpoints
+      const root = document.documentElement;
+      const currentUnit = root.style.getPropertyValue('--unit');
+      root.style.setProperty('--unit', currentUnit || getUnitSize() + 'px');
+      
       // Immediate recalculation when crossing breakpoints
       adjustBlocks();
     } else {
@@ -1274,56 +1318,46 @@
     const UNIT = getUnitSize();
     const currentWidth = window.innerWidth;
     
-    // Calculate optimal columns and margins similar to adjustBlocks
-    let bestCols = 0;
-    let bestMarginUnits = 1;
-    
     // Get current screen width to determine mobile breakpoint (same logic as adjustBlocks)
     const isMobile = currentWidth <= 768;
     const isTablet = currentWidth <= 1024 && currentWidth > 768;
     
-    // Use smaller margins on mobile/tablet for less white space
-    let marginOptions;
+    // On mobile, let CSS handle everything - minimal JS setup only
     if (isMobile) {
-      // On mobile, use fixed 0px margin for testing
-      marginOptions = [0]; // Single option: 0px
-    } else if (isTablet) {
-      // On tablet, use smaller unit-based margins
+      const contentWidth = Math.floor(currentWidth / UNIT) * UNIT;
+      
+      // Set container width only
+      containerElement.style.width = `${contentWidth}px`;
+      containerElement.style.margin = '0 auto';
+      
+      // Remove any body margins to let CSS take over
+      document.body.style.marginLeft = '';
+      document.body.style.marginRight = '';
+      
+      initialLayoutCalculated = true;
+      return;
+    }
+    
+    // Desktop/tablet logic - calculate optimal columns and margins
+    let bestCols = 0;
+    let bestMarginUnits = 1;
+    
+    // Use smaller margins on tablet for less white space
+    let marginOptions;
+    if (isTablet) {
       marginOptions = [1, 1.5]; // 1 or 1.5 units
     } else {
-      // Desktop: original behavior
       marginOptions = [1, 2, 3]; // 1, 2, or 3 units
     }
     
     // Try different margin sizes based on device
     for (const testMarginValue of marginOptions) {
-      let testMargin;
-      if (isMobile) {
-        testMargin = testMarginValue; // Already in pixels for mobile
-      } else {
-        testMargin = testMarginValue * UNIT; // Unit-based for tablet/desktop
-      }
-      
+      const testMargin = testMarginValue * UNIT; // Unit-based for tablet/desktop
       const testAvailableWidth = currentWidth - (2 * testMargin);
       let testCols = Math.floor(testAvailableWidth / UNIT);
       
-      // On mobile, be more aggressive about using available width
-      if (isMobile) {
-        // Calculate how much space would be left over
-        const remainingSpace = testAvailableWidth - (testCols * UNIT);
-        // If we have more than 1 unit of remaining space, try to use it
-        if (remainingSpace >= UNIT) {
-          testCols += Math.floor(remainingSpace / UNIT);
-        }
-        // Ensure even number of columns for consistent layout, even on mobile
-        if (testCols % 2 !== 0) testCols--;
-        // Ensure minimum of 2 for layout consistency
-        testCols = Math.max(testCols, 2);
-      } else {
-        // Make sure it's an even number for proper centering on tablet/desktop
-        if (testCols % 2 !== 0) testCols--;
-      }
-      
+      // Make sure it's an even number for proper centering on tablet/desktop
+      if (testCols % 2 !== 0) testCols--;
       testCols = Math.min(testCols, 20); // MAX_COLS
       
       if (testCols > bestCols || (testCols === bestCols && testMarginValue > bestMarginUnits)) {
@@ -1333,18 +1367,13 @@
     }
     
     const contentWidth = bestCols * UNIT;
-    
-    // Calculate final margin based on device type (same logic as adjustBlocks)
-    let finalMargin;
-    if (isMobile) {
-      finalMargin = 0; // Fixed 0px on mobile for testing
-    } else {
-      finalMargin = bestMarginUnits * UNIT; // Unit-based on tablet/desktop
-    }
+    const finalMargin = bestMarginUnits * UNIT;
     
     // Set dimensions immediately to prevent layout shift
     containerElement.style.width = `${contentWidth}px`;
     containerElement.style.margin = '0 auto';
+    
+    // Set body margins for desktop/tablet
     document.body.style.marginLeft = `${finalMargin}px`;
     document.body.style.marginRight = `${finalMargin}px`;
     
