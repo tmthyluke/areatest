@@ -280,16 +280,14 @@ box-sizing: border-box;
   gap: calc(var(--unit)/2);
   justify-content: center;
   align-content: start;
-  place-items: center; /* Center individual grid items within their cells */
+  align-items: start; /* Align items to start instead of center */
+  justify-items: stretch; /* Make items fill the full width of their grid cells */
   margin: 0 auto; /* Center the grid container */
 }
 .grid.grid-layout .grid-item:not(.image-item):not(.mode-toggle) { display: none; }
-.grid-item.image-item {
-  cursor: pointer; 
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-  position: relative; /* Position relative for absolute positioning of crop marks */
+.grid.grid-layout .grid-item.image-item {
+  width: 100%; /* Ensure full width in grid cells */
+  justify-self: stretch; /* Stretch to fill grid cell width */
 }
 .grid-item {
   position: relative;
@@ -803,6 +801,12 @@ body.hide-controls .lightbox-controls {
 /* SVG View Toggle Button Styles */
 #view-toggle-btn {
   cursor: pointer;
+  /* background: yellow; */
+  border-radius: 6px;
+}
+
+#view-toggle-btn:hover {
+  background: yellow;
 }
 
 #view-toggle-svg {
@@ -827,4 +831,12 @@ d: path("M0.92,91.43 l23.91,-23.91 m-12.86,24.26 l18.46,-24.61 m-7.2,24.88 l12.5
 /* Active state for the view toggle button */
 #view-toggle-btn.active svg {
   color: var(--highlight-color);
+}
+
+.grid-item.image-item {
+  cursor: pointer; 
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* Position relative for absolute positioning of crop marks */
 } 
