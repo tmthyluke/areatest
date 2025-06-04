@@ -48,6 +48,8 @@
       mounted = false; // Clean up on unmount
       document.removeEventListener('keydown', handleKeyboard);
       window.removeEventListener('resize', handleResize);
+      // Clean up rigid scroll listeners
+      cleanupRigidScroll();
     };
   });
   
@@ -74,6 +76,8 @@
     setTimeout(() => {
       initDragAndDrop();
       initCaptionEditing();
+      // Initialize rigid scroll behavior
+      enableRigidScroll();
     }, 200);
   }
   
@@ -1130,6 +1134,76 @@
       });
     });
   }
+  
+  // Rigid scroll quantization functionality
+  let rigidScrollCleanup = null;
+
+  function enableRigidScroll() {
+    const UNIT = 72; // Our base unit size
+    
+    // WHEEL (mouse/trackpad) scrolling - strict quantization
+    const handleWheel = (e) => {
+      e.preventDefault(); // Always prevent default - strict control
+      const dir = Math.sign(e.deltaY);
+      if (dir === 0) return;
+      
+      // Always move exactly 1 unit, no exceptions
+      const next = Math.max(0, window.scrollY + dir * UNIT);
+      window.scrollTo({ top: next, behavior: 'auto' });
+    };
+
+    // TOUCH (mobile) scrolling - strict quantization
+    let touchStartY = null;
+    
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (touchStartY === null) return;
+      const deltaY = touchStartY - e.touches[0].clientY;
+      
+      // Lower threshold for more responsive touch
+      if (Math.abs(deltaY) < 10) return; 
+      
+      e.preventDefault(); // Strict control
+      const dir = Math.sign(deltaY);
+      
+      // Always move exactly 1 unit
+      const next = Math.max(0, window.scrollY + dir * UNIT);
+      window.scrollTo({ top: next, behavior: 'auto' });
+      
+      // Reset touch start for next gesture
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+      touchStartY = null;
+    };
+
+    // Add event listeners - strict capture
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    // Store cleanup function
+    rigidScrollCleanup = () => {
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }
+
+  function cleanupRigidScroll() {
+    if (rigidScrollCleanup) {
+      rigidScrollCleanup();
+      rigidScrollCleanup = null;
+    }
+  }
 </script>
 
 <!-- Same template structure, but using components -->
@@ -1249,6 +1323,16 @@
 
 <style>
   /* All styles come from gallery.css */
+  
+  /* Rigid scroll quantization styles */
+  :global(html) {
+    scroll-behavior: auto;  /* no extra smoothness on scripted scrolls */
+    overscroll-behavior: contain;  /* stop iOS/Edge bounce */
+  }
+  
+  :global(body) {
+    scroll-behavior: auto;
+  }
   
   /* Hide elements */
   .hidden {
