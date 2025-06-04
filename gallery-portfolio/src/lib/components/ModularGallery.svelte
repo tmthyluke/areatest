@@ -34,7 +34,7 @@
   let lastWindowWidth = 0;
   
   // Computed API URLs based on projectId
-  $: apiBaseUrl = 'http://localhost:3000/api';
+  $: apiBaseUrl = '/api';
   $: imagesApiUrl = projectId ? `${apiBaseUrl}/projects/${projectId}/images` : `${apiBaseUrl}/images`;
   $: settingsApiUrl = projectId ? `${apiBaseUrl}/projects/${projectId}/settings` : `${apiBaseUrl}/settings`;
   
@@ -108,7 +108,7 @@
         
         availableImages[id] = {
           id,
-          src: `http://localhost:3000${imagePath}`,
+          src: imagePath,
           alt: fileName,
           caption: settings.caption || fileName,
           units: units,

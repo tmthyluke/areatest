@@ -19,8 +19,8 @@ export async function load({ params, fetch, parent }) {
     
     // Fetch project settings and images in parallel
     const [settingsResponse, imagesResponse] = await Promise.all([
-      fetch(`http://localhost:3000/api/projects/${projectId}/settings`),
-      fetch(`http://localhost:3000/api/projects/${projectId}/images`)
+      fetch(`/api/projects/${projectId}/settings`),
+      fetch(`/api/projects/${projectId}/images`)
     ]);
     
     let projectSettings = null;
