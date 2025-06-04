@@ -2,14 +2,14 @@
 
 ## 📌 Status: Definitive Working Version (June 3, 2025)
 
-**✅ CONFIRMED WORKING STATE**
-- API Server: Running on port 3000 ✅
-- SvelteKit Frontend: Running on port 5173 ✅  
-- Projects Loaded: sky-project, portfolio-2024, apple-branding ✅
-- Image Loading: All images serving correctly ✅
-- Version Control: Clean Git state with tagged release ✅
+**✅ CONFIRMED WORKING STATE - SINGLE SERVER ARCHITECTURE**
+- ✅ SvelteKit Frontend + API: Running on port 5174 
+- ✅ Projects Loaded: sky-project, portfolio-2024, apple-branding 
+- ✅ Image Loading: All images serving correctly 
+- ✅ Version Control: Clean Git state with tagged release 
+- ✅ **NEW**: Eliminated separate API server - everything runs in SvelteKit!
 
-> This version was successfully restored from backup folder "New copy 4" and confirmed working on June 3, 2025.
+> This version was successfully restored from backup folder "New copy 4" and migrated to a single-server architecture on June 3, 2025.
 
 A sophisticated, responsive gallery portfolio system built with SvelteKit featuring multi-project organization, responsive grid layouts, drag-and-drop functionality, and real-time image editing capabilities.
 
@@ -26,9 +26,9 @@ A sophisticated, responsive gallery portfolio system built with SvelteKit featur
 
 ## Architecture
 
-- **Frontend**: SvelteKit application (port 5173+)
-- **Backend**: Node.js API server (port 3000)
+- **Frontend + Backend**: Single SvelteKit application with built-in API routes
 - **Data Storage**: JSON files in projects directory
+- **Port**: 5173 (development) - serves both frontend and API
 
 ## Quick Start
 
@@ -44,28 +44,20 @@ A sophisticated, responsive gallery portfolio system built with SvelteKit featur
    cd New
    ```
 
-2. **Install frontend dependencies**
+2. **Install dependencies**
    ```bash
    cd gallery-portfolio
    npm install
    ```
 
-3. **Start the backend server**
+3. **Start the development server**
    ```bash
-   # From the root directory
-   node server.js
-   ```
-
-4. **Start the frontend development server**
-   ```bash
-   # In a new terminal, from the gallery-portfolio directory
-   cd gallery-portfolio
    npm run dev
    ```
 
-5. **Open your browser**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:3000
+4. **Open your browser**
+   - Application: http://localhost:5173
+   - All API endpoints are served from the same server
 
 ## Project Structure
 
@@ -95,12 +87,17 @@ A sophisticated, responsive gallery portfolio system built with SvelteKit featur
 
 ## Development
 
-The project consists of two main parts:
+The project is now a unified SvelteKit application with built-in API routes:
 
-1. **Backend**: A Node.js server that provides the API for managing projects and images
-2. **Frontend**: A SvelteKit application that provides the user interface
+- **Frontend**: Svelte components in `gallery-portfolio/src/routes/`
+- **API**: SvelteKit API routes in `gallery-portfolio/src/routes/api/`
+- **Hot Reloading**: Both frontend and API changes are reflected immediately
+- **Single Process**: No need to manage multiple servers
 
-Both need to be running simultaneously for the full application to work.
+To develop:
+1. Run `npm run dev` in the `gallery-portfolio/` directory
+2. Make changes to either frontend components or API routes
+3. Changes are automatically reflected in the browser
 
 ## Contributing
 
