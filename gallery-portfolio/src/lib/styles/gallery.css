@@ -224,7 +224,7 @@ z-index: 10002; /* Higher than lightbox z-index (10001) */
 display: flex;
 justify-content: center;
 align-items: center;
-height: var(--unit);
+height: calc(var(--unit) * 2);
 width: 100%;
 box-sizing: border-box;
 }
@@ -232,7 +232,7 @@ box-sizing: border-box;
   cursor: pointer;
   user-select: none;
   width: calc(var(--unit) * 2);
-  height: var(--unit);
+  height: calc(var(--unit) * 2);
   display: flex;
   align-items: center;
   justify-content: center;
