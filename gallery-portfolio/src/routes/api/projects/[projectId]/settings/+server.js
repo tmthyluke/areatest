@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const PROJECTS_DIR = join(process.cwd(), '..', 'projects');
+const PROJECTS_DIR = join(process.cwd(), 'projects');
 
 export async function GET({ params }) {
   try {

@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "upload-block": {
+      "units": 6,
+      "isFill": true
+    },
+    "img-16-fill": {
+      "units": 4,
+      "isFill": true,
+      "caption": ""
+    },
+    "img-14-lifeline-fill": {
+      "units": 2,
+      "isFill": true,
+      "caption": "14-lifeline"
+    },
+    "img-1-apple-fill": {
+      "units": 4,
+      "isFill": true,
+      "caption": "MACN"
+    },
+    "img-Frame3203-fill": {
+      "units": 8,
+      "isFill": true,
+      "caption": "Frame3203"
+    },
+    "img-ShieldsPink-fill": {
+      "units": 8,
+      "isFill": true,
+      "caption": "ShieldsPink 123"
+    }
+  },
+  "imageOrder": [
+    "img-ShieldsPink-fill",
+    "img-16-fill",
+    "img-Frame3203-fill",
+    "img-1-apple-fill",
+    "img-14-lifeline-fill"
+  ]
+}

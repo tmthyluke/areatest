@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { existsSync, createReadStream } from 'fs';
 import { join, extname } from 'path';
 
-const PROJECTS_DIR = join(process.cwd(), '..', 'projects');
+const PROJECTS_DIR = join(process.cwd(), 'projects');
 
 export async function GET({ params, request }) {
   try {
