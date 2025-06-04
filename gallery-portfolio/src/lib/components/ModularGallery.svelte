@@ -21,6 +21,7 @@
   let currentFocus = -1;
   let hideControls = true;
   let images = []; // Reactive array of image data
+  let initialLayoutCalculated = false; // Track if initial layout is calculated
   
   // DOM references
   let gridElement;
@@ -42,20 +43,23 @@
   onMount(() => {
     console.log('ModularGallery mounted');
     mounted = true; // Set mounted to true
+    
+    // Pre-calculate layout to avoid shifts
+    calculateUnitSize();
+    setInitialContainerSize();
+    
     initializeGallery();
     
     return () => {
       mounted = false; // Clean up on unmount
       document.removeEventListener('keydown', handleKeyboard);
       window.removeEventListener('resize', handleResize);
-      // Clean up rigid scroll listeners
-      cleanupRigidScroll();
     };
   });
   
   function initializeGallery() {
     setViewMode('feed');
-    loadImages();
+    loadImages(); // This will handle all subsequent initialization
     
     // Set initial controls visibility
     if (hideControls) {
@@ -69,16 +73,13 @@
       gridElement.addEventListener('click', handleImageClick);
     }
     
-    calculateUnitSize();
-    adjustBlocks();
+    // Only calculate unit size if not already done in setInitialContainerSize
+    if (!initialLayoutCalculated) {
+      calculateUnitSize();
+      adjustBlocks();
+    }
+    
     setupMoreInfoHandlers();
-    // Initialize drag-and-drop and caption editing after images are loaded
-    setTimeout(() => {
-      initDragAndDrop();
-      initCaptionEditing();
-      // Initialize rigid scroll behavior
-      enableRigidScroll();
-    }, 200);
   }
   
   async function loadImages() {
@@ -103,13 +104,19 @@
       const savedImageOrder = settingsData.imageOrder || [];
       const imageFiles = imagesData.images || [];
       
-      // Create a map of all available images first
+      // Create a map of all available images with pre-calculated dimensions
       const availableImages = {};
+      const UNIT = getUnitSize();
+      
       imageFiles.forEach(imagePath => {
         const fileName = imagePath.split('/').pop().split('.')[0];
         const id = `img-${fileName}-fill`;
         const settings = savedSettings[id] || {};
         const units = settings.units || 4;
+        
+        // Pre-calculate dimensions to prevent layout shift
+        const imageWidth = units * UNIT;
+        const estimatedHeight = Math.round(imageWidth * 0.67); // Default 3:2 ratio
         
         availableImages[id] = {
           id,
@@ -117,42 +124,43 @@
           alt: fileName,
           caption: settings.caption || fileName,
           units: units,
-          originalUnits: units, // Store original units for grid/feed switching
+          originalUnits: units,
           mode: settings.isFill !== undefined ? (settings.isFill ? 'fill' : 'fit') : 'fill',
-          ratio: '3:2'
+          ratio: '3:2',
+          // Add pre-calculated dimensions
+          preCalculatedWidth: imageWidth,
+          preCalculatedHeight: estimatedHeight
         };
       });
       
       // Use saved order if available, otherwise use natural file order
       if (savedImageOrder.length > 0) {
-        // Apply saved order, filtering out any images that no longer exist
         images = savedImageOrder
           .filter(id => availableImages[id])
           .map(id => availableImages[id]);
         
-        // Add any new images that weren't in the saved order to the end
         const orderedIds = new Set(savedImageOrder);
         const newImages = Object.values(availableImages).filter(img => !orderedIds.has(img.id));
         images = [...images, ...newImages];
       } else {
-        // No saved order, use natural file order
         images = Object.values(availableImages);
       }
       
-      // Update imageIds to match the order
+      // Update imageIds
       imageIds = ['upload-block', ...images.map(img => img.id)];
-      
-      setTimeout(() => adjustBlocks(), 100);
-      
-      // Update the images array for Svelte reactivity
-      images = images;
-      imageIds = images.map(img => img.id);
       
       console.log('Loaded images:', images.length, 'images', preloadedImages ? '(preloaded)' : '(fetched)');
       
-      // Allow time for Svelte to update the DOM, then initialize caption editing
+      // Wait for DOM update, then do single layout calculation
       await tick();
-      setTimeout(() => initCaptionEditing(), 100);
+      
+      // Single layout adjustment instead of multiple setTimeout calls
+      requestAnimationFrame(() => {
+        adjustBlocks();
+        // Initialize secondary features after layout is stable
+        initCaptionEditing();
+        initDragAndDrop();
+      });
       
     } catch (error) {
       console.error('Error loading images:', error);
@@ -282,6 +290,12 @@
     const UNIT = getUnitSize();
     const MAX_COLS = 20; // Maximum number of columns
     
+    // Skip recalculation if dimensions haven't changed (optimization)
+    const currentWidth = window.innerWidth;
+    if (initialLayoutCalculated && lastWindowWidth === currentWidth && !gridViewActive && !lightboxMode) {
+      return;
+    }
+    
     // Calculate layout using original method, but with synchronized units
     let bestCols = 0;
     let bestMarginUnits = 1;
@@ -289,7 +303,7 @@
     // Try different margin sizes (1, 2, or 3 units per side)
     for (let testMarginUnits = 1; testMarginUnits <= 3; testMarginUnits++) {
       const testMargin = testMarginUnits * UNIT;
-      const testAvailableWidth = window.innerWidth - (2 * testMargin);
+      const testAvailableWidth = currentWidth - (2 * testMargin);
       
       let testCols = Math.floor(testAvailableWidth / UNIT);
       
@@ -324,9 +338,10 @@
     document.body.style.marginLeft = `${finalMargin}px`;
     document.body.style.marginRight = `${finalMargin}px`;
     
-    // Get grid column width from control
+    // Cache DOM queries for better performance
     const gridColumnWidthInput = document.getElementById('grid-column-width');
     const gridColumnWidthUnits = parseInt(gridColumnWidthInput?.value) || gridColumnWidth;
+    const columnCountEl = document.getElementById('column-count');
     
     if (gridElement) {
       if (currentView === 'grid' && !lightboxMode) {
@@ -355,7 +370,6 @@
         gridElement.classList.add('grid-layout');
         
         // Update column count display
-        const columnCountEl = document.getElementById('column-count');
         if (columnCountEl) {
           columnCountEl.textContent = totalColumns;
         }
@@ -387,8 +401,10 @@
       }
     }
     
-    // Apply sizing to all grid items (original logic)
-    document.querySelectorAll('.grid-item[data-max-units]').forEach(item => {
+    // Apply sizing to all grid items with improved image handling
+    const gridItems = document.querySelectorAll('.grid-item[data-max-units]');
+    
+    gridItems.forEach(item => {
       let u = Math.min(+item.dataset.maxUnits, viewUnits);
       
       // For feed view, ensure even number of units and minimum of 2
@@ -407,18 +423,39 @@
       
       if (item.classList.contains('image-item')) {
         const img = item.querySelector('img');
-        if (!img || !img.complete) { 
-          if (img) img.onload = adjustBlocks; 
-          return; 
-        }
-        
         const imgContainer = item.querySelector('.image-container');
+        
         if (imgContainer) {
-          const h = Math.round(w * img.naturalHeight / img.naturalWidth / UNIT) * UNIT;
-          imgContainer.style.height = h + 'px';
+          // Use pre-calculated dimensions if available to prevent layout shift
+          const imageData = images.find(imgData => imgData.id === item.id);
+          
+          if (imageData && imageData.preCalculatedHeight) {
+            // Use pre-calculated height initially
+            imgContainer.style.height = imageData.preCalculatedHeight + 'px';
+          }
+          
+          // Update with actual dimensions when image loads
+          if (img && img.complete && img.naturalWidth) {
+            const h = Math.round(w * img.naturalHeight / img.naturalWidth / UNIT) * UNIT;
+            imgContainer.style.height = h + 'px';
+          } else if (img && !img.complete) {
+            // Optimize image loading - only set onload if not already set
+            if (!img.dataset.onloadSet) {
+              img.onload = () => {
+                if (imgContainer && img.naturalWidth) {
+                  const h = Math.round(w * img.naturalHeight / img.naturalWidth / UNIT) * UNIT;
+                  imgContainer.style.height = h + 'px';
+                }
+              };
+              img.dataset.onloadSet = 'true';
+            }
+          }
         }
       }
     });
+    
+    // Update lastWindowWidth for optimization
+    lastWindowWidth = currentWidth;
   }
   
   // More responsive debounce for breakpoint changes
@@ -1135,74 +1172,42 @@
     });
   }
   
-  // Rigid scroll quantization functionality
-  let rigidScrollCleanup = null;
-
-  function enableRigidScroll() {
-    const UNIT = 72; // Our base unit size
+  function setInitialContainerSize() {
+    if (!containerElement) return;
     
-    // WHEEL (mouse/trackpad) scrolling - strict quantization
-    const handleWheel = (e) => {
-      e.preventDefault(); // Always prevent default - strict control
-      const dir = Math.sign(e.deltaY);
-      if (dir === 0) return;
+    // Set initial container dimensions to prevent layout shift
+    const UNIT = getUnitSize();
+    const currentWidth = window.innerWidth;
+    
+    // Calculate optimal columns and margins similar to adjustBlocks
+    let bestCols = 0;
+    let bestMarginUnits = 1;
+    
+    for (let testMarginUnits = 1; testMarginUnits <= 3; testMarginUnits++) {
+      const testMargin = testMarginUnits * UNIT;
+      const testAvailableWidth = currentWidth - (2 * testMargin);
+      let testCols = Math.floor(testAvailableWidth / UNIT);
       
-      // Always move exactly 1 unit, no exceptions
-      const next = Math.max(0, window.scrollY + dir * UNIT);
-      window.scrollTo({ top: next, behavior: 'auto' });
-    };
-
-    // TOUCH (mobile) scrolling - strict quantization
-    let touchStartY = null;
-    
-    const handleTouchStart = (e) => {
-      if (e.touches.length === 1) {
-        touchStartY = e.touches[0].clientY;
+      if (testCols % 2 !== 0) testCols--;
+      testCols = Math.min(testCols, 20); // MAX_COLS
+      testCols = Math.max(testCols, 2);
+      
+      if (testCols > bestCols || (testCols === bestCols && testMarginUnits > bestMarginUnits)) {
+        bestCols = testCols;
+        bestMarginUnits = testMarginUnits;
       }
-    };
-
-    const handleTouchMove = (e) => {
-      if (touchStartY === null) return;
-      const deltaY = touchStartY - e.touches[0].clientY;
-      
-      // Lower threshold for more responsive touch
-      if (Math.abs(deltaY) < 10) return; 
-      
-      e.preventDefault(); // Strict control
-      const dir = Math.sign(deltaY);
-      
-      // Always move exactly 1 unit
-      const next = Math.max(0, window.scrollY + dir * UNIT);
-      window.scrollTo({ top: next, behavior: 'auto' });
-      
-      // Reset touch start for next gesture
-      touchStartY = e.touches[0].clientY;
-    };
-
-    const handleTouchEnd = () => {
-      touchStartY = null;
-    };
-
-    // Add event listeners - strict capture
-    document.addEventListener('wheel', handleWheel, { passive: false });
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-    // Store cleanup function
-    rigidScrollCleanup = () => {
-      document.removeEventListener('wheel', handleWheel);
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }
-
-  function cleanupRigidScroll() {
-    if (rigidScrollCleanup) {
-      rigidScrollCleanup();
-      rigidScrollCleanup = null;
     }
+    
+    const contentWidth = bestCols * UNIT;
+    const finalMargin = bestMarginUnits * UNIT;
+    
+    // Set dimensions immediately to prevent layout shift
+    containerElement.style.width = `${contentWidth}px`;
+    containerElement.style.margin = '0 auto';
+    document.body.style.marginLeft = `${finalMargin}px`;
+    document.body.style.marginRight = `${finalMargin}px`;
+    
+    initialLayoutCalculated = true;
   }
 </script>
 
@@ -1324,16 +1329,6 @@
 <style>
   /* All styles come from gallery.css */
   
-  /* Rigid scroll quantization styles */
-  :global(html) {
-    scroll-behavior: auto;  /* no extra smoothness on scripted scrolls */
-    overscroll-behavior: contain;  /* stop iOS/Edge bounce */
-  }
-  
-  :global(body) {
-    scroll-behavior: auto;
-  }
-  
   /* Hide elements */
   .hidden {
     display: none !important;
@@ -1397,5 +1392,58 @@
     background-color: rgba(255, 255, 255, 0.9);
     outline: none;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Performance optimizations - skeleton loading */
+  :global(.image-container) {
+    background-color: #f5f5f5;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  :global(.image-container::before) {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+      rgba(255,255,255,0) 0%, 
+      rgba(255,255,255,0.2) 20%, 
+      rgba(255,255,255,0.5) 50%, 
+      rgba(255,255,255,0.2) 80%, 
+      rgba(255,255,255,0) 100%);
+    transform: translateX(-100%);
+    animation: skeleton-loading 2s infinite;
+    z-index: 1;
+  }
+  
+  :global(.image-container img) {
+    position: relative;
+    z-index: 2;
+    transition: opacity 0.3s ease;
+  }
+  
+  :global(.image-container img:not([src]), .image-container img[src=""]) {
+    opacity: 0;
+  }
+  
+  :global(.image-container img[src]:not([src=""])) {
+    opacity: 1;
+  }
+  
+  @keyframes skeleton-loading {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  /* Disable skeleton loading once image is loaded */
+  :global(.image-container.loaded::before) {
+    display: none;
   }
 </style> 
