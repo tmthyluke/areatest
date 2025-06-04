@@ -4,8 +4,14 @@
   /** @type {import('./$types').PageData} */
   export let data;
   
-  // Data is now pre-loaded via +page.js
-  $: ({ projectId, projectInfo, projectSettings, projectImages, allProjects } = data);
+  // Data is now pre-loaded via +page.js with static data
+  $: ({ projectId, images, settings } = data);
+  
+  // Create project info for the title
+  $: projectInfo = {
+    name: projectId.charAt(0).toUpperCase() + projectId.slice(1),
+    description: `${projectId} project gallery`
+  };
 </script>
 
 <svelte:head>
@@ -16,8 +22,8 @@
 <main>
   <ModularGallery 
     {projectId} 
-    preloadedSettings={projectSettings}
-    preloadedImages={projectImages}
+    preloadedSettings={settings}
+    preloadedImages={{ images }}
   />
 </main>
 

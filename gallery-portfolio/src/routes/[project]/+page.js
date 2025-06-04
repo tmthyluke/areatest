@@ -1,53 +1,34 @@
 import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ params, fetch, parent }) {
-  const projectId = params.project;
+export async function load({ params }) {
+  const projectImages = {
+    "area": [
+      "/images/1-apple.png",
+      "/images/KazooSkate3.png", 
+      "/images/britpop.png",
+      "/images/38-lifeline-poster.png",
+      "/images/6-apple-lettering.png"
+    ],
+    "nature": [
+      "/images/12-translucent-apple-poster.png",
+      "/images/stack.png",
+      "/images/37-beautiful-superstar-poster.png"
+    ],
+    "urban": [
+      "/images/Badges2000.jpg",
+      "/images/KazooLFGNew_.png",
+      "/images/39-xxoplex-poster.png",
+      "/images/36-apple-poster.png"
+    ]
+  };
+
+  const { project: projectId } = params;
+  const images = projectImages[projectId] || [];
   
-  try {
-    // Get projects from parent layout
-    const { projects } = await parent();
-    const project = projects.find(p => p.id === projectId);
-    
-    if (!project) {
-      throw error(404, `Project "${projectId}" not found`);
-    }
-    
-    if (!project.active) {
-      throw error(404, `Project "${projectId}" is not active`);
-    }
-    
-    // Fetch project settings and images in parallel
-    const [settingsResponse, imagesResponse] = await Promise.all([
-      fetch(`/api/projects/${projectId}/settings`),
-      fetch(`/api/projects/${projectId}/images`)
-    ]);
-    
-    let projectSettings = null;
-    let projectImages = null;
-    
-    if (settingsResponse.ok) {
-      projectSettings = await settingsResponse.json();
-    }
-    
-    if (imagesResponse.ok) {
-      projectImages = await imagesResponse.json();
-    }
-    
-    return {
-      projectId,
-      projectInfo: project,
-      projectSettings,
-      projectImages,
-      // Include all projects for navigation
-      allProjects: projects.filter(p => p.active)
-    };
-    
-  } catch (err) {
-    console.error('Error loading project:', err);
-    if (err.status) {
-      throw err; // Re-throw SvelteKit errors
-    }
-    throw error(500, 'Failed to load project data');
-  }
+  return {
+    projectId,
+    images,
+    settings: { settings: {}, imageOrder: [] }
+  };
 } 
