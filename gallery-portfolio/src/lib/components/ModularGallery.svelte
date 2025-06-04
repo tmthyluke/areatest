@@ -302,15 +302,51 @@
     let bestCols = 0;
     let bestMarginUnits = 1;
     
-    // Try different margin sizes (1, 2, or 3 units per side)
-    for (let testMarginUnits = 1; testMarginUnits <= 3; testMarginUnits++) {
-      const testMargin = testMarginUnits * UNIT;
+    // Get current screen width to determine mobile breakpoint
+    const isMobile = currentWidth <= 768;
+    const isTablet = currentWidth <= 1024 && currentWidth > 768;
+    
+    // Use smaller margins on mobile/tablet for less white space
+    let marginOptions;
+    if (isMobile) {
+      // On mobile, use fixed 0px margin for testing
+      marginOptions = [0]; // Single option: 0px
+    } else if (isTablet) {
+      // On tablet, use smaller unit-based margins
+      marginOptions = [1, 1.5]; // 1 or 1.5 units
+    } else {
+      // Desktop: original behavior
+      marginOptions = [1, 2, 3]; // 1, 2, or 3 units
+    }
+    
+    // Try different margin sizes based on device
+    for (const testMarginValue of marginOptions) {
+      let testMargin;
+      if (isMobile) {
+        testMargin = testMarginValue; // Already in pixels for mobile
+      } else {
+        testMargin = testMarginValue * UNIT; // Unit-based for tablet/desktop
+      }
+      
       const testAvailableWidth = currentWidth - (2 * testMargin);
       
       let testCols = Math.floor(testAvailableWidth / UNIT);
       
-      // Make sure it's an even number for proper centering
-      if (testCols % 2 !== 0) testCols--;
+      // On mobile, be more aggressive about using available width
+      if (isMobile) {
+        // Calculate how much space would be left over
+        const remainingSpace = testAvailableWidth - (testCols * UNIT);
+        // If we have more than 1 unit of remaining space, try to use it
+        if (remainingSpace >= UNIT) {
+          testCols += Math.floor(remainingSpace / UNIT);
+        }
+        // For mobile, we can allow odd numbers since single-column layout is common
+        // But ensure minimum of 2 for layout consistency
+        testCols = Math.max(testCols, 2);
+      } else {
+        // Make sure it's an even number for proper centering on tablet/desktop
+        if (testCols % 2 !== 0) testCols--;
+      }
       
       // Apply max column limit
       if (!lightboxMode) testCols = Math.min(testCols, MAX_COLS);
@@ -318,16 +354,24 @@
       // Ensure we always have at least 2 columns (1 unit would be too narrow)
       testCols = Math.max(testCols, 2);
       
-      if (testCols > bestCols || (testCols === bestCols && testMarginUnits > bestMarginUnits)) {
+      if (testCols > bestCols || (testCols === bestCols && testMarginValue > bestMarginUnits)) {
         bestCols = testCols;
-        bestMarginUnits = testMarginUnits;
+        bestMarginUnits = testMarginValue;
       }
     }
     
     const cols = bestCols;
     const marginUnits = bestMarginUnits;
     const contentWidth = cols * UNIT;
-    const finalMargin = marginUnits * UNIT;
+    
+    // Calculate final margin based on device type
+    let finalMargin;
+    if (isMobile) {
+      finalMargin = 0; // Fixed 0px on mobile for testing
+    } else {
+      finalMargin = marginUnits * UNIT; // Unit-based on tablet/desktop
+    }
+    
     const viewUnits = cols;
     
     // Set the content wrapper width and margins like original
@@ -889,17 +933,57 @@
       // How many columns would fit?
       let testCols = Math.floor(testAvailableWidth / UNIT);
       
-      // Make sure it's an even number
-      if (testCols % 2 !== 0) testCols--;
+      // Get current screen width to determine mobile breakpoint
+      const isMobile = window.innerWidth <= 768;
+      const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
       
-      // Apply max column limit
-      if (!lightboxMode) testCols = Math.min(testCols, MAX_COLS);
+      // Use smaller margins on mobile/tablet for less white space
+      let marginOptions;
+      if (isMobile) {
+        // On mobile, use fixed 0px margin for testing
+        marginOptions = [0]; // Single option: 0px
+      } else if (isTablet) {
+        // On tablet, use smaller unit-based margins
+        marginOptions = [1, 1.5]; // 1 or 1.5 units
+      } else {
+        // Desktop: original behavior
+        marginOptions = [1, 2, 3]; // 1, 2, or 3 units
+      }
       
-      // If this gives us more columns than our current best (or same columns with bigger margin),
-      // update our best values
-      if (testCols > bestCols || (testCols === bestCols && testMarginUnits > bestMarginUnits)) {
-        bestCols = testCols;
-        bestMarginUnits = testMarginUnits;
+      // Try different margin sizes based on device
+      for (const testMarginValue of marginOptions) {
+        let testMargin;
+        if (isMobile) {
+          testMargin = testMarginValue; // Already in pixels for mobile
+        } else {
+          testMargin = testMarginValue * UNIT; // Unit-based for tablet/desktop
+        }
+        
+        const testAvailableWidth = window.innerWidth - (2 * testMargin);
+        let testCols = Math.floor(testAvailableWidth / UNIT);
+        
+        // On mobile, be more aggressive about using available width
+        if (isMobile) {
+          // Calculate how much space would be left over
+          const remainingSpace = testAvailableWidth - (testCols * UNIT);
+          // If we have more than 1 unit of remaining space, try to use it
+          if (remainingSpace >= UNIT) {
+            testCols += Math.floor(remainingSpace / UNIT);
+          }
+          // For mobile, we can allow odd numbers since single-column layout is common
+          // But ensure minimum of 2 for layout consistency
+          testCols = Math.max(testCols, 2);
+        } else {
+          // Make sure it's an even number for proper centering on tablet/desktop
+          if (testCols % 2 !== 0) testCols--;
+        }
+        
+        testCols = Math.min(testCols, 20); // MAX_COLS
+        
+        if (testCols > bestCols || (testCols === bestCols && testMarginValue > bestMarginUnits)) {
+          bestCols = testCols;
+          bestMarginUnits = testMarginValue;
+        }
       }
     }
     
@@ -1192,23 +1276,68 @@
     let bestCols = 0;
     let bestMarginUnits = 1;
     
-    for (let testMarginUnits = 1; testMarginUnits <= 3; testMarginUnits++) {
-      const testMargin = testMarginUnits * UNIT;
+    // Get current screen width to determine mobile breakpoint (same logic as adjustBlocks)
+    const isMobile = currentWidth <= 768;
+    const isTablet = currentWidth <= 1024 && currentWidth > 768;
+    
+    // Use smaller margins on mobile/tablet for less white space
+    let marginOptions;
+    if (isMobile) {
+      // On mobile, use fixed 0px margin for testing
+      marginOptions = [0]; // Single option: 0px
+    } else if (isTablet) {
+      // On tablet, use smaller unit-based margins
+      marginOptions = [1, 1.5]; // 1 or 1.5 units
+    } else {
+      // Desktop: original behavior
+      marginOptions = [1, 2, 3]; // 1, 2, or 3 units
+    }
+    
+    // Try different margin sizes based on device
+    for (const testMarginValue of marginOptions) {
+      let testMargin;
+      if (isMobile) {
+        testMargin = testMarginValue; // Already in pixels for mobile
+      } else {
+        testMargin = testMarginValue * UNIT; // Unit-based for tablet/desktop
+      }
+      
       const testAvailableWidth = currentWidth - (2 * testMargin);
       let testCols = Math.floor(testAvailableWidth / UNIT);
       
-      if (testCols % 2 !== 0) testCols--;
-      testCols = Math.min(testCols, 20); // MAX_COLS
-      testCols = Math.max(testCols, 2);
+      // On mobile, be more aggressive about using available width
+      if (isMobile) {
+        // Calculate how much space would be left over
+        const remainingSpace = testAvailableWidth - (testCols * UNIT);
+        // If we have more than 1 unit of remaining space, try to use it
+        if (remainingSpace >= UNIT) {
+          testCols += Math.floor(remainingSpace / UNIT);
+        }
+        // For mobile, we can allow odd numbers since single-column layout is common
+        // But ensure minimum of 2 for layout consistency
+        testCols = Math.max(testCols, 2);
+      } else {
+        // Make sure it's an even number for proper centering on tablet/desktop
+        if (testCols % 2 !== 0) testCols--;
+      }
       
-      if (testCols > bestCols || (testCols === bestCols && testMarginUnits > bestMarginUnits)) {
+      testCols = Math.min(testCols, 20); // MAX_COLS
+      
+      if (testCols > bestCols || (testCols === bestCols && testMarginValue > bestMarginUnits)) {
         bestCols = testCols;
-        bestMarginUnits = testMarginUnits;
+        bestMarginUnits = testMarginValue;
       }
     }
     
     const contentWidth = bestCols * UNIT;
-    const finalMargin = bestMarginUnits * UNIT;
+    
+    // Calculate final margin based on device type (same logic as adjustBlocks)
+    let finalMargin;
+    if (isMobile) {
+      finalMargin = 0; // Fixed 0px on mobile for testing
+    } else {
+      finalMargin = bestMarginUnits * UNIT; // Unit-based on tablet/desktop
+    }
     
     // Set dimensions immediately to prevent layout shift
     containerElement.style.width = `${contentWidth}px`;

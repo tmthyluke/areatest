@@ -55,8 +55,8 @@
   }}
 >
   <svg 
-    width="120" 
-    height="120" 
+    width="calc(var(--unit) * 2)" 
+    height="calc(var(--unit) * 2)" 
     viewBox="0 0 72 72" 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"

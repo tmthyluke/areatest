@@ -60,6 +60,14 @@
   }
 }
 
+/* Mobile breakpoint - smaller padding to match 0px margins for testing */
+@media (max-width: 768px) {
+  .grid {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+}
+
 /* Basic styling for all elements */
 * {
   -webkit-font-smoothing: subpixel-antialiased;
@@ -141,6 +149,15 @@ body {
   padding: calc(var(--unit)) 24px var(--unit) 24px;
   /* transition: opacity 0.3s ease; */
   min-height: auto; /* Remove any minimum height constraints */
+}
+
+/* Responsive grid padding to match margin behavior */
+/* Tablet breakpoint - reduce padding */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .grid {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
 }
 
 /* Hide grid when lightbox is active */
