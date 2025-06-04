@@ -27,12 +27,7 @@
   }
   
   // Extract coordinates from current path
-  $: {
-    console.log('ViewToggleButton - viewMode changed to:', viewMode);
-    console.log('Available pathStates:', Object.keys(pathStates));
-    console.log('Selected path exists:', !!pathStates[viewMode]);
-    currentNumbers = extractNumbers(pathStates[viewMode] || pathStates.feed);
-  }
+  $: currentNumbers = extractNumbers(pathStates[viewMode] || pathStates.feed);
   
   // Create tweened store for coordinate interpolation
   const coordinatesTween = tweened(currentNumbers, {
@@ -41,10 +36,7 @@
   });
   
   // Update tweened store when viewMode changes
-  $: {
-    console.log('Updating coordinatesTween with new numbers, length:', currentNumbers.length);
-    coordinatesTween.set(currentNumbers);
-  }
+  $: coordinatesTween.set(currentNumbers);
   
   // Reconstruct path from tweened coordinates
   $: tweenedPath = reconstructPath($coordinatesTween, pathStates[viewMode] || pathStates.feed);
