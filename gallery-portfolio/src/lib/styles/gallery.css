@@ -86,6 +86,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center; /* Center content wrapper horizontally */
+  min-height: auto; /* Allow body to hug content height */
 }
 
 /* Content wrapper with grid pattern */
@@ -139,6 +140,7 @@ body {
   gap: var(--unit); /* Default gap for feed view */
   padding: calc(var(--unit)) 24px var(--unit) 24px;
   /* transition: opacity 0.3s ease; */
+  min-height: auto; /* Remove any minimum height constraints */
 }
 
 /* Hide grid when lightbox is active */
@@ -178,6 +180,7 @@ body.grid-view .content-wrapper {
   --grid-spacer: 6px; /* Smaller spacer for grid view */
   --grid-spacer-center: 6px; /* Smaller center spacer for grid view */
   --grid-spacer-micro: 6px; /* Smaller micro spacers for grid view */
+  min-height: auto; /* Allow content wrapper to hug content height */
 }
 
 /* Control Overlay Styles */
