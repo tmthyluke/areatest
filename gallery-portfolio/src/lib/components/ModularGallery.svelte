@@ -340,8 +340,9 @@
         if (remainingSpace >= UNIT) {
           testCols += Math.floor(remainingSpace / UNIT);
         }
-        // For mobile, we can allow odd numbers since single-column layout is common
-        // But ensure minimum of 2 for layout consistency
+        // Ensure even number of columns for consistent layout, even on mobile
+        if (testCols % 2 !== 0) testCols--;
+        // Ensure minimum of 2 for layout consistency
         testCols = Math.max(testCols, 2);
       } else {
         // Make sure it's an even number for proper centering on tablet/desktop
@@ -970,8 +971,9 @@
           if (remainingSpace >= UNIT) {
             testCols += Math.floor(remainingSpace / UNIT);
           }
-          // For mobile, we can allow odd numbers since single-column layout is common
-          // But ensure minimum of 2 for layout consistency
+          // Ensure even number of columns for consistent layout, even on mobile
+          if (testCols % 2 !== 0) testCols--;
+          // Ensure minimum of 2 for layout consistency
           testCols = Math.max(testCols, 2);
         } else {
           // Make sure it's an even number for proper centering on tablet/desktop
@@ -1313,8 +1315,9 @@
         if (remainingSpace >= UNIT) {
           testCols += Math.floor(remainingSpace / UNIT);
         }
-        // For mobile, we can allow odd numbers since single-column layout is common
-        // But ensure minimum of 2 for layout consistency
+        // Ensure even number of columns for consistent layout, even on mobile
+        if (testCols % 2 !== 0) testCols--;
+        // Ensure minimum of 2 for layout consistency
         testCols = Math.max(testCols, 2);
       } else {
         // Make sure it's an even number for proper centering on tablet/desktop
