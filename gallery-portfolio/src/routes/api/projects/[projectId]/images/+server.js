@@ -1,29 +1,29 @@
 import { json } from '@sveltejs/kit';
-import { readdirSync, existsSync } from 'fs';
-import { join, extname } from 'path';
 
-const PROJECTS_DIR = join(process.cwd(), 'projects');
+// Static image data for each project - using actual images from /static/images/
+const projectImages = {
+  "area": [
+    "/images/1-apple.png",
+    "/images/KazooSkate3.png", 
+    "/images/britpop.png",
+    "/images/38-lifeline-poster.png",
+    "/images/6-apple-lettering.png"
+  ],
+  "nature": [
+    "/images/12-translucent-apple-poster.png",
+    "/images/stack.png",
+    "/images/37-beautiful-superstar-poster.png"
+  ],
+  "urban": [
+    "/images/Badges2000.jpg",
+    "/images/KazooLFGNew_.png",
+    "/images/39-xxoplex-poster.png",
+    "/images/36-apple-poster.png"
+  ]
+};
 
 export async function GET({ params }) {
-  try {
-    const { projectId } = params;
-    const imagesDir = join(PROJECTS_DIR, projectId, 'images');
-    
-    if (!existsSync(imagesDir)) {
-      return json({ images: [] });
-    }
-    
-    const files = readdirSync(imagesDir);
-    const imageFiles = files.filter(file => {
-      const ext = extname(file).toLowerCase();
-      return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext);
-    });
-    
-    const imagePaths = imageFiles.map(file => `/api/projects/${projectId}/images/${file}`);
-    
-    return json({ images: imagePaths });
-  } catch (error) {
-    console.error('Error reading project images:', error);
-    return json({ error: 'Failed to load images' }, { status: 500 });
-  }
+  const { projectId } = params;
+  const images = projectImages[projectId] || [];
+  return json({ images });
 } 
