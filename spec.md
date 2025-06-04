@@ -1,358 +1,310 @@
-# Gridsite Portfolio - Technical Specification
+# SvelteKit Gallery Portfolio - Technical Specification
 
-## 🎯 **Project Overview**
+## Overview
 
-A modern, modular portfolio gallery system built with SvelteKit that provides smooth navigation between projects with three distinct viewing modes: Feed, Grid, and Lightbox. Features persistent settings storage and optimized layout calculations to prevent layout shift.
+A sophisticated, responsive gallery portfolio system built with SvelteKit featuring multi-project organization, responsive grid layouts, drag-and-drop functionality, and real-time image editing capabilities.
 
-**Live Demo**: https://area-black.vercel.app/  
-**Local Development**: http://localhost:5175/
+## Architecture
 
----
+### Frontend (SvelteKit)
+- **Framework**: SvelteKit with Vite
+- **Port**: 5173+ (auto-increments if occupied)
+- **Structure**: Multi-route application with dynamic project routing
 
-## 🏗️ **Architecture**
+### Backend (Node.js API)
+- **Server**: Express.js API server
+- **Port**: 3000
+- **Data Storage**: JSON files in `projects/` directory structure
 
-### **Core Technologies**
-- **Frontend**: SvelteKit (v2.11.1)
-- **Runtime**: Node.js 18.x (Vercel)
-- **Styling**: Vanilla CSS with CSS Custom Properties
-- **Deployment**: Vercel with GitHub integration
-- **API**: SvelteKit API routes (server-side)
+## Project Structure
 
-### **Project Structure**
 ```
-/
-├── src/
-│   ├── routes/                    # SvelteKit routes
-│   │   ├── +layout.js             # Project data loading
-│   │   ├── +layout.svelte         # Global layout
-│   │   ├── +page.svelte           # Projects homepage
-│   │   ├── [project]/             # Dynamic project routes
-│   │   │   ├── +page.js           # Project page data
-│   │   │   └── +page.svelte       # Project gallery page
-│   │   └── api/                   # API endpoints
-│   │       └── projects/[projectId]/
-│   │           ├── images/+server.js  # Image listing
-│   │           └── settings/+server.js # Settings CRUD
-│   ├── lib/
-│   │   ├── components/
-│   │   │   ├── ModularGallery.svelte  # Main gallery component
-│   │   │   └── ImageItem.svelte       # Individual image component
-│   │   ├── styles/
-│   │   │   └── gallery.css            # Global gallery styles
-│   │   └── utils/
-│   │       ├── debounce.js            # Utility functions
-│   │       ├── layout.js              # Layout calculations
-│   │       └── units.js               # Unit size utilities
-│   └── app.html                       # HTML template
-├── static/                            # Static assets
-│   ├── projects.json                  # Project configuration
-│   ├── apple-branding/                # Project directory
-│   │   ├── settings.json              # Project settings
-│   │   ├── image-settings.json        # Detailed image settings
-│   │   └── images/                    # Project images
-│   ├── sky-project/                   # Additional projects...
-│   └── portfolio-2024/
-├── package.json                       # Dependencies
-├── svelte.config.js                   # SvelteKit configuration
-└── vercel.json                        # Deployment configuration
+├── gallery-portfolio/          # SvelteKit application
+│   ├── src/
+│   │   ├── lib/
+│   │   │   ├── components/     # Gallery components
+│   │   │   ├── stores/         # Svelte stores
+│   │   │   ├── styles/         # CSS files
+│   │   │   └── utils/          # Utility functions
+│   │   └── routes/
+│   │       ├── +page.svelte    # Project selector
+│   │       └── [project]/      # Dynamic project routes
+├── projects/                   # Project data directory
+│   ├── {project-name}/
+│   │   ├── images/            # Project images
+│   │   ├── image-settings.json # Image configuration
+│   │   └── project.json       # Project metadata
+└── server.js                  # Express API server
 ```
 
----
+## Core Components
 
-## 🎨 **View Modes**
+### 1. ModularGallery.svelte
+**Primary gallery component with full editing capabilities**
 
-### **1. Feed View (Default)**
-- **Layout**: Vertical masonry-style layout
-- **Image Sizing**: Variable units (2-20), even numbers only
-- **Navigation**: Arrow keys for vertical scrolling
-- **Interaction**: Click images to open lightbox
+**Features:**
+- Grid and feed view modes
+- Drag-and-drop reordering
+- Real-time caption editing
+- Image sizing controls (1-20 units)
+- Fill/fit toggle for image display
+- Lightbox view with navigation
+- Upload functionality
+- Responsive grid layout with centering
 
-### **2. Grid View**
-- **Layout**: CSS Grid with configurable column width
-- **Image Sizing**: Uniform grid cells
-- **Navigation**: Responsive grid based on screen size
-- **Interaction**: Click images to return to feed view
-
-### **3. Lightbox View**
-- **Layout**: Full-screen image display
-- **Image Sizing**: Dynamic based on image content
-- **Navigation**: Arrow keys for previous/next
-- **Interaction**: Escape to close, click nav areas
-
----
-
-## ⚙️ **Component Architecture**
-
-### **ModularGallery.svelte** (Main Component)
 **Props:**
-- `projectId`: String - Current project identifier
-- `preloadedImages`: Array - Pre-fetched image data (optional)
-- `preloadedSettings`: Object - Pre-fetched settings (optional)
+- `projectId` (string): Project identifier
+- `projectImages` (array): Image data array
+- `projectSettings` (object): Project configuration
 
-**Key Features:**
-- Layout shift prevention with CSS custom properties
-- Responsive unit-based sizing system
-- Live caption editing with auto-save
-- Smooth transitions between view modes
+### 2. SimpleGallery.svelte
+**Simplified gallery component**
 
-### **ImageItem.svelte** (Reusable Component)
-**Props:**
-- `id`, `src`, `alt`, `caption`: String - Image metadata
-- `units`: Number - Width in units (2-20, even numbers)
-- `mode`: String - 'fill' or 'fit' object-fit mode
-- `projectId`: String - For API endpoint construction
+**Features:**
+- Basic grid/feed view
+- Reduced editing capabilities
+- Lightbox support
+- Upload functionality
 
-**Events:**
-- `settingsChanged`: Fired when image settings update
-- `imageLoaded`: Fired when image loads for layout recalculation
+### 3. ImageGallery.svelte
+**Minimal gallery component**
 
----
+**Features:**
+- Display-only gallery
+- Basic lightbox
+- No editing capabilities
 
-## 🔧 **API System**
+## Responsive Unit System
 
-### **Endpoints**
+### Base Unit Sizes
+- **Desktop**: 72px (default)
+- **Tablet**: 60px (769px - 1024px)
+- **Mobile**: 48px (≤768px)
 
-#### **GET /api/projects/[projectId]/images**
-Returns list of image files for a project.
-```json
-{
-  "images": [
-    "/apple-branding/images/1-apple.png",
-    "/apple-branding/images/stack.png"
-  ]
+### Implementation
+```css
+:root {
+  --base-unit: 72px;
+  --unit: var(--base-unit);
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  :root {
+    --base-unit: 60px;
+    --unit: var(--base-unit);
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --base-unit: 48px;
+    --unit: var(--base-unit);
+  }
 }
 ```
 
-#### **GET/POST /api/projects/[projectId]/settings**
-**GET**: Returns project settings and image order
-```json
-{
-  "settings": {
-    "img-1-apple-fill": {
-      "units": 6,
-      "isFill": true,
-      "caption": "Apple Logo"
-    }
-  },
-  "imageOrder": ["img-1-apple-fill", "img-stack-fill"]
-}
-```
+### JavaScript Integration
+- Cached unit reading with performance optimization
+- Breakpoint change detection
+- Synchronized CSS/JavaScript calculations
 
-**POST**: Updates image settings or reorders images
-```json
-{
-  "imageId": "img-1-apple-fill",
-  "units": 8,
-  "isFill": false,
-  "caption": "Updated Caption"
-}
-```
+## Grid Layout System
 
-### **Settings Storage**
-- **Location**: `static/[project]/settings.json` and `image-settings.json`
-- **Persistence**: File-based storage survives deployments
-- **Scope**: Per-project settings isolation
-- **Sync**: Real-time updates across devices
+### Grid View Features
+- **Odd column enforcement**: Grid always uses odd numbers of columns for proper centering
+- **Dynamic centering**: Single items on last row center properly
+- **Responsive column calculation**: Automatic column count based on screen width and unit size
+- **Gap spacing**: `calc(var(--unit)/2)` between grid items
 
----
-
-## 🎯 **Layout System**
-
-### **Unit-Based Sizing**
-- **Base Unit**: 72px (1 unit)
-- **Breakpoints**: Responsive unit sizing
-  - Mobile: 36px
-  - Tablet: 54px  
-  - Desktop: 72px
-- **Grid Calculations**: Dynamic column count based on viewport
-
-### **Layout Shift Prevention**
-1. **CSS Custom Properties**: Fallback dimensions set immediately
-2. **Pre-calculation**: Layout dimensions calculated on mount
-3. **Smooth Loading**: Opacity transitions during layout ready state
-4. **Persistent Margins**: Body margins applied instantly
-
-### **Responsive Behavior**
+### Grid Layout Logic
 ```javascript
-// Layout calculation logic
-const UNIT = getUnitSize(); // Responsive unit size
-const availableWidth = window.innerWidth - (2 * margin);
-const columns = Math.floor(availableWidth / UNIT);
-const contentWidth = columns * UNIT;
+// Ensure odd number of columns
+if (totalColumns % 2 === 0) {
+  totalColumns--;
+}
+
+// Calculate grid width for centering
+const gridWidth = totalColumns * columnWidth;
 ```
 
----
-
-## 🚀 **Performance Features**
-
-### **Image Loading**
-- **Lazy Loading**: Images load as needed
-- **Preloading**: Optional data pre-fetching for faster navigation
-- **Layout Recalculation**: Triggered after image load events
-
-### **State Management**
-- **Component State**: Local Svelte reactivity
-- **URL Synchronization**: Project routes reflect current state
-- **Settings Persistence**: Real-time save without page reload
-
-### **Optimization**
-- **Debounced Resize**: Efficient window resize handling
-- **CSS Transitions**: Smooth layout changes
-- **Memory Management**: Event listener cleanup on unmount
-
----
-
-## 🔧 **Development**
-
-### **Setup**
-```bash
-npm install
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-```
-
-### **Project Configuration**
-Edit `static/projects.json` to add new projects:
-```json
-{
-  "projects": [
-    {
-      "id": "apple-branding",
-      "title": "Apple Branding",
-      "description": "Logo Design, App Icon Design",
-      "date": "FEBRUARY 2023"
-    }
-  ]
+### CSS Grid Configuration
+```css
+.grid.grid-layout {
+  display: grid;
+  gap: calc(var(--unit)/2);
+  justify-content: center;
+  align-content: start;
+  place-items: center;
+  margin: 0 auto;
 }
 ```
 
-### **Adding Projects**
-1. Create directory: `static/[project-id]/`
-2. Add images to: `static/[project-id]/images/`
-3. Create settings: `static/[project-id]/settings.json`
-4. Update `static/projects.json`
+## API Endpoints
 
----
+### Project Management
+- `GET /api/projects` - List all projects
+- `GET /api/projects/{projectId}/settings` - Get project settings
+- `POST /api/projects/{projectId}/settings` - Update project settings
+- `GET /api/projects/{projectId}/images` - Get project images
+- `GET /api/projects/{projectId}/images/{filename}` - Serve image file
 
-## 🚦 **Deployment**
+### Legacy Support
+- `POST /api/settings` - Legacy settings endpoint (maps to apple-branding project)
 
-### **Vercel Configuration**
+## Data Models
+
+### Project Settings Schema
 ```json
 {
-  "functions": {
-    "src/routes/api/**/*.js": {
-      "runtime": "nodejs18.x"
+  "imageOrder": ["img-id-1", "img-id-2", ...],
+  "imageSettings": {
+    "img-id-1": {
+      "units": 4,
+      "isFill": true,
+      "caption": "Image caption"
     }
   }
 }
 ```
 
-### **Environment**
-- **Runtime**: Node.js 18.x (required for filesystem access)
-- **Build**: SvelteKit adapter-vercel
-- **Assets**: Static files served via Vercel CDN
-- **API**: Server-side API routes handle settings persistence
+### Project Metadata Schema
+```json
+{
+  "name": "Project Name",
+  "description": "Project description",
+  "created": "ISO date string",
+  "modified": "ISO date string"
+}
+```
 
-### **Build Process**
-1. GitHub push triggers Vercel deployment
-2. SvelteKit builds optimized static assets
-3. API routes compiled to serverless functions
-4. Static images served from CDN
+## Features
 
----
+### Controls System
+- **Default State**: Hidden on page load
+- **Toggle Button**: Controls visibility of editing interface
+- **Body Class**: `hide-controls` applied when hidden
+- **Keyboard Support**: Various keyboard shortcuts
 
-## 🎛️ **Settings & Configuration**
+### Image Editing
+- **Unit Sizing**: 1-20 units width
+- **Caption Editing**: Inline contenteditable
+- **Fill/Fit Toggle**: Object-fit control
+- **Drag-and-Drop**: Visual reordering with ghost elements
 
-### **Image Settings**
-- **Units**: Width in 72px units (2-20, even numbers)
-- **Mode**: Fill (cover) or Fit (contain) object-fit
-- **Caption**: Editable text with live save
-- **Order**: Drag & drop reordering (implementation ready)
+### Performance Optimizations
+- **Debounced Updates**: 0ms debounce for instant responsiveness
+- **Cached Unit Calculations**: Avoid repeated DOM queries
+- **Lazy Loading**: Images load as needed
+- **Efficient Resizing**: Smart resize handling with breakpoint detection
 
-### **View Settings**
-- **Grid Column Width**: Adjustable units per grid column
-- **Control Visibility**: Toggle editing controls
-- **Layout Mode**: Feed/Grid/Lightbox state
+### View Modes
+1. **Feed View**: Vertical flowing layout with background grid
+2. **Grid View**: Fixed grid with dynamic column calculation
+3. **Lightbox View**: Full-screen image viewing with navigation
 
-### **Project Settings**
-- **Image Order**: Persistent ordering across sessions
-- **Individual Settings**: Per-image configuration
-- **Cross-Device Sync**: Settings stored in repository
+## Background System
 
----
+### Grid Patterns
+- **Dynamic scaling**: Grid patterns scale with unit size
+- **Responsive gradients**: Background gradients adjust to breakpoints
+- **Visual indicators**: Corner markers and center points
 
-## 🔍 **Error Handling**
+### CSS Custom Properties
+```css
+--grid-color: #cdceda;
+--bg-color: #ffffff;
+--dot-color: var(--grid-color);
+--grid-spacing: calc(var(--unit)/8);
+```
 
-### **API Errors**
-- **404 Errors**: Graceful handling of missing projects/images
-- **Network Errors**: Retry logic and fallback states
-- **Malformed Data**: Validation and default value assignment
+## File Upload
 
-### **Layout Errors**
-- **Missing Images**: Placeholder handling
-- **Invalid Dimensions**: Fallback to default sizing
-- **Browser Compatibility**: Progressive enhancement
+### Support
+- **Drag-and-drop**: Direct file dropping onto upload blocks
+- **File picker**: Traditional file selection
+- **Format support**: Images (jpg, png, svg, etc.)
+- **Auto-processing**: Automatic addition to project
 
----
+## Keyboard Shortcuts
 
-## 🧹 **Recent Optimizations (June 2024)**
+### Navigation
+- **Arrow keys**: Navigate between images in lightbox
+- **Escape**: Close lightbox/exit modes
+- **Space**: Toggle view modes
 
-### **Cleanup Actions Performed**
-1. **Removed 170MB of duplicate images** from `static/images/`
-2. **Eliminated unused gallery store** (392 lines)
-3. **Removed redundant calculateUnitSize function**
-4. **Cleaned up commented drag & drop CSS**
-5. **Fixed accessibility warnings** (added tabindex)
-6. **Removed .DS_Store files** and empty directories
+### Editing
+- **Enter**: Confirm caption edits
+- **Tab**: Navigate between editable elements
 
-### **Architecture Improvements**
-- **Layout Shift Prevention**: CSS custom properties with fallbacks
-- **Smoother Loading**: Opacity transitions during layout calculation
-- **Cleaner Codebase**: Removed redundant functions and files
-- **Better Performance**: Eliminated duplicate API calls and redundant calculations
+## Browser Support
 
-### **File Structure Cleanup**
-- **Before**: 1.7GB with duplicates
-- **After**: 1.5GB, ~170MB saved
-- **Organized**: Project-specific image storage only
-- **Efficient**: Single source of truth for settings
+### Requirements
+- **Modern browsers**: ES6+ support required
+- **CSS Grid**: Full CSS Grid support needed
+- **CSS Custom Properties**: Variable support required
+- **Fetch API**: For API communication
 
----
+### Responsive Design
+- **Mobile first**: Optimized for mobile devices
+- **Touch support**: Touch-friendly interface
+- **Smooth animations**: 60fps transitions
 
-## 📝 **Known Issues & Limitations**
+## Development
 
-### **Current Limitations**
-- **Favicon Errors**: Occasional 404s in development (non-breaking)
-- **Drag & Drop**: Implementation prepared but not active
-- **Mobile Optimization**: Room for gesture improvements
+### Scripts
+```bash
+# Start development servers
+cd gallery-portfolio && npm run dev  # SvelteKit dev server
+node server.js                       # API server
 
-### **Future Enhancements**
-- **Image Upload**: Direct file upload functionality
-- **Batch Operations**: Multi-select image management
-- **Advanced Filters**: Category and tag-based organization
-- **Performance**: Image optimization and WebP conversion
+# Kill existing processes
+pkill -f "node server.js"
+pkill -f "vite dev"
+```
 
----
+### Environment
+- **Node.js**: Required for API server
+- **npm**: Package management
+- **Vite**: Build tool and dev server
 
-## 🔗 **Dependencies**
+## Deployment Considerations
 
-### **Production**
-- `@sveltejs/kit@^2.11.1` - Core framework
-- `@sveltejs/adapter-vercel@^5.4.7` - Vercel deployment
-- `svelte@^5.3.0` - Component framework
+### Production Setup
+1. Build SvelteKit application: `npm run build`
+2. Configure API server for production
+3. Set up proper image serving
+4. Configure CORS if needed
 
-### **Development**
-- `@sveltejs/vite-plugin-svelte@^4.0.0` - Vite integration
-- `vite@^6.3.5` - Build tool
+### Performance
+- **Image optimization**: Consider WebP conversion
+- **CDN**: For image delivery
+- **Caching**: API response caching
+- **Minification**: CSS/JS optimization
 
-### **Utilities**
-- Custom debounce, layout, and unit utilities
-- CSS custom properties for layout management
-- Filesystem-based settings persistence
+## Security
 
----
+### File Upload Security
+- **Type validation**: Server-side file type checking
+- **Size limits**: Prevent large file uploads
+- **Sanitization**: Filename sanitization
 
-**Last Updated**: June 2024  
-**Version**: 2.0 (Post-cleanup)  
-**Status**: Production Ready ✅ 
+### API Security
+- **Input validation**: All API inputs validated
+- **Path traversal protection**: Secure file serving
+- **CORS configuration**: Proper cross-origin setup
+
+## Future Enhancements
+
+### Potential Features
+- **User authentication**: Multi-user support
+- **Cloud storage**: AWS S3/Google Cloud integration
+- **Image processing**: Automated optimization
+- **Analytics**: Usage tracking
+- **Themes**: Customizable color schemes
+- **Export**: Portfolio export functionality
+
+### Technical Improvements
+- **TypeScript**: Type safety implementation
+- **Testing**: Unit and integration tests
+- **Documentation**: API documentation
+- **Monitoring**: Error tracking and performance monitoring 
