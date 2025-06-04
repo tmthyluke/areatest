@@ -220,7 +220,7 @@ position: fixed;
 top: 0;
 left: 0;
 right: 0;
-z-index: 10002; /* Higher than lightbox z-index (10001) */
+z-index: 10003; /* Higher than lightbox elements (10000-10002) */
 display: flex;
 justify-content: center;
 align-items: center;

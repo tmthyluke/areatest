@@ -28,6 +28,7 @@
   // Additional variables for optimized adjustBlocks
   let containerElement;
   let currentView = 'feed';
+  let previousView = 'feed'; // Track where we came from when entering lightbox
   let gridColumnWidth = 2; // Default grid column width in units - this should be reactive
   
   // Cached unit size for performance
@@ -218,6 +219,8 @@
       if (gridElement) gridElement.classList.remove('grid-layout');
     }
     else if (mode === 'lightbox') {
+      // Store the current view as the previous view before entering lightbox
+      previousView = currentView;
       currentView = 'lightbox';
       document.body.classList.add('lightbox-view');
       lightboxMode = true;
@@ -458,7 +461,10 @@
     
     if (imageId !== null) {
       // Opening the lightbox
+      // Store the current view as the previous view before entering lightbox
+      previousView = currentView;
       lightboxMode = true;
+      currentView = 'lightbox'; // Update currentView to reflect lightbox state
       lightboxViewContainer.classList.add('active');
       document.body.classList.add('lightbox-active');
       
@@ -546,6 +552,8 @@
     } else {
       // Closing the lightbox
       lightboxMode = false;
+      // Restore currentView to the previous view (where we came from)
+      currentView = previousView;
       lightboxViewContainer.classList.remove('active');
       document.body.classList.remove('lightbox-active');
       updateActiveNavState();
@@ -1127,6 +1135,48 @@
       });
     });
   }
+  
+  function smartViewToggle() {
+    console.log('smartViewToggle called - currentView:', currentView, 'previousView:', previousView);
+    if (currentView === 'lightbox') {
+      // In lightbox: return to where we came from
+      console.log('In lightbox, returning to:', previousView);
+      setViewMode(previousView);
+    } else if (currentView === 'feed') {
+      // In feed: go to grid
+      console.log('In feed, going to grid');
+      setViewMode('grid');
+    } else if (currentView === 'grid') {
+      // In grid: go to feed  
+      console.log('In grid, going to feed');
+      setViewMode('feed');
+    }
+  }
+  
+  // Get the destination view for the SVG icon
+  function getToggleDestination() {
+    let destination;
+    console.log('getToggleDestination - currentView:', currentView, 'previousView:', previousView);
+    
+    if (currentView === 'lightbox') {
+      destination = previousView || 'feed'; // Show icon for where we'll return to, fallback to feed
+    } else if (currentView === 'feed') {
+      destination = 'grid'; // Show grid icon since clicking goes to grid
+    } else if (currentView === 'grid') {
+      destination = 'feed'; // Show feed icon since clicking goes to feed
+    } else {
+      destination = 'feed'; // Default fallback
+    }
+    
+    // Ensure destination is always one of the valid path states
+    if (!['feed', 'grid', 'lightbox'].includes(destination)) {
+      console.warn('Invalid destination:', destination, 'falling back to feed');
+      destination = 'feed';
+    }
+    
+    console.log('getToggleDestination result:', currentView, '->', destination);
+    return destination;
+  }
 </script>
 
 <!-- Same template structure, but using components -->
@@ -1146,11 +1196,11 @@
   <div class="mode-toggle" id="projects-btn" on:click={() => window.location.href = '/'}>
     <div class="mode-toggle-inner">Projects</div>
   </div>
-  <div class="mode-toggle" id="view-toggle-btn" on:click={() => setViewMode(gridViewActive ? 'feed' : 'grid')}>
+  <div class="mode-toggle" id="view-toggle-btn">
     <div class="mode-toggle-inner">
       <ViewToggleButton 
-        viewMode={currentView}
-        onClick={() => setViewMode(gridViewActive ? 'feed' : 'grid')}
+        viewMode={getToggleDestination()}
+        onClick={smartViewToggle}
       />
     </div>
   </div>
