@@ -1149,7 +1149,7 @@
   <div class="mode-toggle" id="projects-btn" on:click={() => window.location.href = '/'}>
     <div class="mode-toggle-inner">Projects</div>
   </div>
-  <div class="mode-toggle" id="view-toggle-btn" on:click={() => setViewMode(gridViewActive ? 'feed' : 'grid')}>
+  <div class="mode-toggle" id="view-toggle-btn">
     <div class="mode-toggle-inner">
       <ViewToggleButton 
         viewMode={currentView}

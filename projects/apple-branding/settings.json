@@ -8,6 +8,10 @@
     "img-uitest-fill": {
       "units": 4,
       "isFill": false
+    },
+    "img-image1-fill": {
+      "units": 16,
+      "isFill": true
     }
   },
   "imageOrder": []
