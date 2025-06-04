@@ -1134,20 +1134,19 @@
 
 <!-- Same template structure, but using components -->
 <div class="mode-toggle-container">
-  <div class="mode-toggle" id="feed-btn" on:click={() => setViewMode('feed')}>
+  <!-- Hide feed and grid buttons -->
+  <div class="mode-toggle hidden" id="feed-btn" on:click={() => setViewMode('feed')}>
     <div class="mode-toggle-inner">Feed</div>
   </div>
-  <div class="mode-toggle" id="grid-btn" on:click={() => setViewMode('grid')}>
+  <div class="mode-toggle hidden" id="grid-btn" on:click={() => setViewMode('grid')}>
     <div class="mode-toggle-inner">Grid</div>
   </div>
-  <div class="mode-toggle" id="lightbox-btn" on:click={() => setViewMode('lightbox')}>
+  
+  <div class="mode-toggle hidden" id="lightbox-btn" on:click={() => setViewMode('lightbox')}>
     <div class="mode-toggle-inner">Lightbox</div>
   </div>
   <div class="mode-toggle" id="controls-toggle-btn" on:click={toggleControlsVisibility}>
     <div class="mode-toggle-inner">Controls</div>
-  </div>
-  <div class="mode-toggle" id="projects-btn" on:click={() => window.location.href = '/'}>
-    <div class="mode-toggle-inner">Projects</div>
   </div>
   <div class="mode-toggle" id="view-toggle-btn">
     <div class="mode-toggle-inner">
@@ -1156,6 +1155,9 @@
         onClick={() => setViewMode(gridViewActive ? 'feed' : 'grid')}
       />
     </div>
+  </div>
+  <div class="mode-toggle" id="projects-btn" on:click={() => window.location.href = '/'}>
+    <div class="mode-toggle-inner">Projects</div>
   </div>
 </div>
 
@@ -1247,6 +1249,19 @@
 
 <style>
   /* All styles come from gallery.css */
+  
+  /* Hide elements */
+  .hidden {
+    display: none !important;
+  }
+  
+  /* Hide indicator triangles/corner marks for now */
+  :global(.mode-toggle::before),
+  :global(.mode-toggle::after),
+  :global(.mode-toggle .mode-toggle-inner::before),
+  :global(.mode-toggle .mode-toggle-inner::after) {
+    display: none !important;
+  }
   
   /* Drag and drop styles */
   .draggable {
