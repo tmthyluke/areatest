@@ -126,6 +126,7 @@
       class="text-inner" 
       contenteditable="true"
       role="textbox"
+      tabindex="0"
       aria-label="Image caption"
       on:blur={handleCaptionBlur}
       on:keydown={handleCaptionKeydown}

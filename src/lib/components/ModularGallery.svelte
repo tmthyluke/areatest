@@ -33,6 +33,10 @@
   let currentUnit = 72;
   let lastWindowWidth = 0;
   
+  // Pre-calculated layout values to prevent layout shift
+  let initialLayoutCalculated = false;
+  let isLayoutReady = false;
+  
   // Computed API URLs based on projectId
   $: apiBaseUrl = '/api';
   $: imagesApiUrl = projectId ? `${apiBaseUrl}/projects/${projectId}/images` : `${apiBaseUrl}/images`;
@@ -43,8 +47,18 @@
   
   onMount(() => {
     console.log('ModularGallery mounted');
+    
+    // Pre-calculate layout immediately to prevent shift
+    preCalculateLayout();
+    initialLayoutCalculated = true;
+    
     mounted = true; // Set mounted to true
     initializeGallery();
+    
+    // Mark layout as ready after initial setup
+    setTimeout(() => {
+      isLayoutReady = true;
+    }, 50);
     
     return () => {
       mounted = false; // Clean up on unmount
@@ -69,7 +83,6 @@
       gridElement.addEventListener('click', handleImageClick);
     }
     
-    calculateUnitSize();
     adjustBlocks();
     setupMoreInfoHandlers();
     // Initialize drag-and-drop and caption editing after images are loaded
@@ -231,7 +244,28 @@
     }
     
     updateActiveNavState();
-    adjustBlocks();
+    
+    // Explicitly trigger CSS custom property changes for gradient animations
+    const contentWrapper = document.querySelector('.content-wrapper');
+    if (contentWrapper) {
+      if (mode === 'grid') {
+        // Force update the CSS variables for grid view
+        contentWrapper.style.setProperty('--grid-spacer', '6px');
+        contentWrapper.style.setProperty('--grid-spacer-center', '6px');
+        contentWrapper.style.setProperty('--grid-spacer-micro', '6px');
+      } else if (mode === 'feed') {
+        // Force update the CSS variables for feed view
+        contentWrapper.style.setProperty('--grid-spacer', '12px');
+        contentWrapper.style.setProperty('--grid-spacer-center', '36px');
+        contentWrapper.style.setProperty('--grid-spacer-micro', '0px');
+      }
+    }
+    
+    // Small delay to ensure CSS classes are applied before triggering layout changes
+    // This helps the gradient transitions trigger properly
+    setTimeout(() => {
+      adjustBlocks();
+    }, 10);
     
     if (!skipScrollRestore) {
       setTimeout(() => window.scrollTo(0, scrollPos), 50);
@@ -314,15 +348,20 @@
     const finalMargin = marginUnits * UNIT;
     const viewUnits = cols;
     
-    // Set the content wrapper width and margins like original
+    // Update CSS custom properties for smooth transitions
+    document.documentElement.style.setProperty('--content-width', `${contentWidth}px`);
+    document.documentElement.style.setProperty('--layout-margin', `${finalMargin}px`);
+    document.documentElement.style.setProperty('--unit-size', `${UNIT}px`);
+    
+    // Set the content wrapper width and margins using CSS variables
     if (containerElement) {
-      containerElement.style.width = `${contentWidth}px`;
+      containerElement.style.width = `var(--content-width)`;
       containerElement.style.margin = '0 auto';
     }
     
-    // Set body margins
-    document.body.style.marginLeft = `${finalMargin}px`;
-    document.body.style.marginRight = `${finalMargin}px`;
+    // Set body margins using CSS variables
+    document.body.style.marginLeft = `var(--layout-margin)`;
+    document.body.style.marginRight = `var(--layout-margin)`;
     
     // Get grid column width from control
     const gridColumnWidthInput = document.getElementById('grid-column-width');
@@ -837,72 +876,6 @@
     }
   }
   
-  function calculateUnitSize() {
-    const UNIT = getUnitSize();
-    const MAX_COLS = 20;  // Maximum number of columns
-    
-    // Try different margin sizes and pick the one that gives us the most balanced layout
-    let bestCols = 0;
-    let bestMarginUnits = 1; // Default to minimum margin
-    
-    // Try each possible margin size (1, 2, or 3 units per side)
-    for (let testMarginUnits = 1; testMarginUnits <= 3; testMarginUnits++) {
-      // Calculate available width with this margin
-      const testMargin = testMarginUnits * UNIT;
-      const testAvailableWidth = window.innerWidth - (2 * testMargin); // Left and right margins
-      
-      // How many columns would fit?
-      let testCols = Math.floor(testAvailableWidth / UNIT);
-      
-      // Make sure it's an even number
-      if (testCols % 2 !== 0) testCols--;
-      
-      // Apply max column limit
-      if (!lightboxMode) testCols = Math.min(testCols, MAX_COLS);
-      
-      // If this gives us more columns than our current best (or same columns with bigger margin),
-      // update our best values
-      if (testCols > bestCols || (testCols === bestCols && testMarginUnits > bestMarginUnits)) {
-        bestCols = testCols;
-        bestMarginUnits = testMarginUnits;
-      }
-    }
-    
-    // Now we have our optimal margin units and column count
-    const marginUnits = bestMarginUnits;
-    const cols = bestCols;
-    
-    // Calculate final values
-    const contentWidth = cols * UNIT;
-    const finalMargin = marginUnits * UNIT;
-    
-    // Set the content wrapper and grid width
-    if (containerElement && !lightboxMode) {
-      // Set the width
-      containerElement.style.width = `${contentWidth}px`;
-      // Apply the margin to top, bottom, left, and right
-      document.body.style.margin = `${finalMargin}px`;
-      
-      // Update column count display
-      const columnCountEl = document.getElementById('column-count');
-      if (columnCountEl) {
-        columnCountEl.textContent = cols;
-      }
-    }
-    
-    if (gridElement && !lightboxMode) {
-      gridElement.style.width = `${contentWidth}px`;
-    }
-    
-    return {
-      unit: UNIT,
-      cols: cols,
-      marginUnits: marginUnits,
-      contentWidth: contentWidth,
-      margin: finalMargin
-    };
-  }
-  
   // Drag and Drop Functionality
   function initDragAndDrop() {
     console.log('Initializing drag and drop...');
@@ -1146,6 +1119,46 @@
     });
   }
   
+  // Pre-calculate initial layout to prevent shift
+  function preCalculateLayout() {
+    if (typeof window === 'undefined') return;
+    
+    const UNIT = getUnitSize();
+    const MAX_COLS = 20;
+    
+    let bestCols = 0;
+    let bestMarginUnits = 1;
+    
+    for (let testMarginUnits = 1; testMarginUnits <= 3; testMarginUnits++) {
+      const testMargin = testMarginUnits * UNIT;
+      const testAvailableWidth = window.innerWidth - (2 * testMargin);
+      
+      let testCols = Math.floor(testAvailableWidth / UNIT);
+      if (testCols % 2 !== 0) testCols--;
+      testCols = Math.min(testCols, MAX_COLS);
+      testCols = Math.max(testCols, 2);
+      
+      if (testCols > bestCols || (testCols === bestCols && testMarginUnits > bestMarginUnits)) {
+        bestCols = testCols;
+        bestMarginUnits = testMarginUnits;
+      }
+    }
+    
+    const contentWidth = bestCols * UNIT;
+    const finalMargin = bestMarginUnits * UNIT;
+    
+    // Set CSS custom properties immediately
+    document.documentElement.style.setProperty('--content-width', `${contentWidth}px`);
+    document.documentElement.style.setProperty('--layout-margin', `${finalMargin}px`);
+    document.documentElement.style.setProperty('--unit-size', `${UNIT}px`);
+    
+    // Apply body margins immediately
+    document.body.style.marginLeft = `${finalMargin}px`;
+    document.body.style.marginRight = `${finalMargin}px`;
+    
+    return { contentWidth, margin: finalMargin, cols: bestCols, unit: UNIT };
+  }
+  
   // Reactive statement to reload images when projectId or preloaded data changes
   $: if (mounted && projectId !== lastProjectId) {
     console.log('ProjectId changed from', lastProjectId, 'to', projectId, '- reloading images with fresh data...');
@@ -1222,7 +1235,7 @@
   </div>
 </div>
 
-<div class="content-wrapper" bind:this={containerElement}>
+<div class="content-wrapper {isLayoutReady ? 'layout-ready' : 'layout-loading'}" bind:this={containerElement}>
   <div class="control-overlay">
     <div class="control-panel">
       <div class="control-group">
@@ -1329,6 +1342,34 @@
 </div>
 
 <style>
+  /* CSS Custom Properties with fallback values to prevent layout shift */
+  :global(:root) {
+    --content-width: 1440px; /* Fallback for common desktop width */
+    --layout-margin: 144px;   /* Fallback margin (2 units at 72px) */
+    --unit-size: 72px;        /* Base unit size */
+  }
+  
+  /* Smooth transitions for layout changes */
+  :global(body) {
+    transition: margin 0.3s ease;
+  }
+  
+  .content-wrapper {
+    width: var(--content-width);
+    margin: 0 auto;
+    transition: width 0.3s ease, opacity 0.2s ease;
+    /* Prevent flash of unstyled content */
+    min-height: 200px;
+  }
+  
+  .content-wrapper.layout-loading {
+    opacity: 0.3;
+  }
+  
+  .content-wrapper.layout-ready {
+    opacity: 1;
+  }
+  
   /* All styles come from gallery.css */
   
   /* Grid layout fixes */
@@ -1344,46 +1385,6 @@
   :global(.grid.grid-layout .image-container img) {
     width: 100% !important;
   }
-  
-  /* Drag and drop styles */
-  /* Note: Drag functionality styles are commented out as they're not currently implemented */
-  /*
-  .draggable {
-    position: relative;
-    cursor: grab;
-  }
-  
-  .dragging {
-    opacity: 0.5;
-    cursor: grabbing;
-  }
-  
-  .drag-ghost {
-    opacity: 0.2;
-  }
-  
-  .drag-handle {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 24px;
-    height: 24px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: grab;
-    z-index: 10;
-    font-size: 18px;
-    color: #333;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
-  }
-  
-  .drag-handle:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-  */
   
   /* Editable caption styles */
   :global(.text-inner[contenteditable=true]) {
