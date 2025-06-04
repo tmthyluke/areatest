@@ -290,11 +290,13 @@
     const UNIT = getUnitSize();
     const MAX_COLS = 20; // Maximum number of columns
     
-    // Skip recalculation if dimensions haven't changed (optimization)
     const currentWidth = window.innerWidth;
-    if (initialLayoutCalculated && lastWindowWidth === currentWidth && !gridViewActive && !lightboxMode) {
-      return;
-    }
+    
+    // Skip recalculation if dimensions haven't changed and we're not switching view modes
+    // Temporarily disabled for debugging
+    // if (initialLayoutCalculated && lastWindowWidth === currentWidth && !gridViewActive && !lightboxMode && currentView === 'feed') {
+    //   return;
+    // }
     
     // Calculate layout using original method, but with synchronized units
     let bestCols = 0;
@@ -374,12 +376,15 @@
           columnCountEl.textContent = totalColumns;
         }
         
-        // In grid view, set all image items to use the grid column width
+        // In grid view, temporarily set all image items to use the grid column width
+        // but preserve the original values for restoration
         document.querySelectorAll('.grid-item').forEach(item => {
           if (item.classList.contains('image-item')) {
-            // Store original max units if not already stored
-            item.dataset.origMaxUnits = item.dataset.origMaxUnits || item.dataset.maxUnits;
-            // Set all images to the grid column width
+            // Store original max units using the correct attribute name (only if not already stored)
+            if (!item.dataset.origMaxUnits) {
+              item.dataset.origMaxUnits = item.dataset.maxUnits;
+            }
+            // Set all images to the grid column width for display
             item.dataset.maxUnits = gridColumnWidthUnits;
           }
         });
@@ -392,12 +397,16 @@
         gridElement.style.gap = 'var(--unit)'; // Reset to the default gap for feed view
         gridElement.classList.remove('grid-layout');
         
-        // Restore original maxUnits values in feed view
+        // Restore original maxUnits values in feed view BEFORE sizing calculations
         document.querySelectorAll('.grid-item').forEach(item => {
           if (item.classList.contains('image-item') && item.dataset.origMaxUnits) {
+            console.log(`Restoring ${item.id}: ${item.dataset.maxUnits} -> ${item.dataset.origMaxUnits}`);
             item.dataset.maxUnits = item.dataset.origMaxUnits;
           }
         });
+        
+        // Force a layout recalculation for feed view by clearing cached values
+        lastWindowWidth = 0; // Force recalculation on next call
       }
     }
     
